@@ -23,6 +23,10 @@ class BackgroundManager {
     this.prevBiome = 0;
     this.fadeTimer = 0;
     this.fadeDuration = 1.0; // 1 second smooth crossfade
+
+    // Highway Campaign Billboard Image
+    this.billboardImg = new Image();
+    this.billboardImg.src = './assets/brand/campaign_banner.jpg';
   }
 
   resize(w, h, roadY) {
@@ -229,8 +233,18 @@ class BackgroundManager {
   renderNearLayer(ctx, biome) {
     ctx.save();
     const baseY = this.roadY;
-    const spacing = 180;
 
+    // 1. Highway Campaign Billboards along the road
+    const bbSpacing = 520;
+    for (let i = -1; i <= Math.ceil(this.w / bbSpacing) + 1; i++) {
+      const bx = i * bbSpacing - (this.layer3Offset * 0.95);
+      if (bx > -160 && bx < this.w + 160) {
+        this.drawHighwayBillboard(ctx, bx, baseY);
+      }
+    }
+
+    // 2. Street light poles
+    const spacing = 180;
     for (let i = -1; i <= Math.ceil(this.w / spacing) + 1; i++) {
       const x = i * spacing - this.layer3Offset;
       ctx.strokeStyle = '#2D3436';
@@ -255,6 +269,57 @@ class BackgroundManager {
         ctx.fill();
       }
     }
+    ctx.restore();
+  }
+
+  drawHighwayBillboard(ctx, x, baseY) {
+    ctx.save();
+    const bbW = 148;
+    const bbH = 68;
+    const postH = 88;
+    const topY = baseY - postH;
+
+    // Steel support posts
+    ctx.fillStyle = '#444450';
+    ctx.fillRect(x + 22, topY + bbH, 6, postH - bbH);
+    ctx.fillRect(x + bbW - 28, topY + bbH, 6, postH - bbH);
+
+    // Cross braces
+    ctx.strokeStyle = '#33333E';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(x + 22, topY + bbH);
+    ctx.lineTo(x + bbW - 22, baseY);
+    ctx.moveTo(x + bbW - 22, topY + bbH);
+    ctx.lineTo(x + 22, baseY);
+    ctx.stroke();
+
+    // Board backing & red LED border
+    ctx.fillStyle = '#0E0E12';
+    ctx.strokeStyle = '#DD0000';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(x, topY, bbW, bbH, 6);
+    ctx.fill();
+    ctx.stroke();
+
+    // Billboard artwork image
+    if (this.billboardImg && this.billboardImg.complete && this.billboardImg.naturalWidth > 0) {
+      ctx.drawImage(this.billboardImg, x + 3, topY + 3, bbW - 6, bbH - 6);
+    } else {
+      ctx.fillStyle = '#DD0000';
+      ctx.font = "bold 11px 'Kanit', sans-serif";
+      ctx.textAlign = 'center';
+      ctx.fillText('ISUZU 2.2 BITURBO', x + bbW / 2, topY + bbH / 2);
+    }
+
+    // Top LED Spotlights
+    ctx.fillStyle = '#FFEAA7';
+    ctx.beginPath();
+    ctx.arc(x + 36, topY - 2, 2.5, 0, Math.PI * 2);
+    ctx.arc(x + bbW - 36, topY - 2, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+
     ctx.restore();
   }
 

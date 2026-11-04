@@ -85,18 +85,22 @@ class GameHUD {
       ctx.fillRect(comboX + 4, comboY + badgeH - 4, (badgeW - 8) * pct, 2.5);
     }
 
-    // 6. TSH Key 2X Multiplier Boost Indicator
+    // 6. 2.2 Biturbo Multiplier Boost Indicator
     if (tshBoostTimer > 0) {
-      const boostX = 100;
+      const boostX = combo > 1 ? 102 : 16;
       const boostY = 64;
-      ctx.fillStyle = '#FFB300';
+      const pulse = 0.85 + Math.sin(Date.now() * 0.01) * 0.15;
+      ctx.fillStyle = `rgba(221, 0, 0, ${pulse})`;
       ctx.beginPath();
-      ctx.roundRect(boostX, boostY, 110, 22, 6);
+      ctx.roundRect(boostX, boostY, 138, 22, 6);
       ctx.fill();
+      ctx.strokeStyle = '#FFD700';
+      ctx.lineWidth = 1;
+      ctx.stroke();
 
-      ctx.font = "bold 12px 'Kanit', sans-serif";
-      ctx.fillStyle = '#1A1A1A';
-      ctx.fillText(`🔑 TSH BOOST x2!`, boostX + 8, boostY + 16);
+      ctx.font = "bold 11px 'Kanit', sans-serif";
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillText(`⚡ 2.2 BITURBO BOOST x2!`, boostX + 6, boostY + 15);
     }
 
     // 7. Mini Boss Rush Event Alert (Pulsating Banner)

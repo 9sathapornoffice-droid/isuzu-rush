@@ -8,7 +8,7 @@ const I18N = {
     // Brand & General
     gameTitle: 'ISUZU RUSH',
     mascotName: 'ISUZU Trusted Buddy (TSH)',
-    tagline: 'เพื่อนแท้ที่คุณวางใจได้ทุกเส้นทาง',
+    tagline: 'พลังใหม่! โบเทอร์โบ แรง...หยุดโลก | 2.2 Ddi MAXFORCE Biturbo',
     loading: 'กำลังโหลด...',
     error: 'เกิดข้อผิดพลาด',
     close: 'ปิด',

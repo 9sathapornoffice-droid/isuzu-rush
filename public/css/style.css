@@ -173,6 +173,111 @@ html, body {
   letter-spacing: 0.5px;
 }
 
+/* --- CAMPAIGN BRANDING & BITURBO HERO --- */
+.splash-campaign-card {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(221, 0, 0, 0.35), 0 0 0 2px rgba(221, 0, 0, 0.4);
+  margin-bottom: 4px;
+  animation: floatBanner 4s ease-in-out infinite;
+}
+
+@keyframes floatBanner {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.splash-campaign-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+.splash-campaign-overlay {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+}
+
+.campaign-pill {
+  background: var(--brand-red);
+  color: #FFF;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 10px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.splash-title-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
+
+.splash-biturbo-logo {
+  width: 250px;
+  max-width: 82%;
+  height: auto;
+  filter: drop-shadow(0 4px 12px rgba(221, 0, 0, 0.5));
+}
+
+.splash-slogan-img {
+  width: 200px;
+  max-width: 68%;
+  height: auto;
+  filter: drop-shadow(0 4px 14px rgba(221, 0, 0, 0.6));
+  animation: pulseSlogan 2.5s ease-in-out infinite;
+}
+
+@keyframes pulseSlogan {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+
+/* Campaign Promo Card on Game Over Screen */
+.campaign-promo-card {
+  width: 100%;
+  background: linear-gradient(135deg, rgba(221, 0, 0, 0.15) 0%, rgba(20, 20, 26, 0.95) 100%);
+  border: 1px solid rgba(221, 0, 0, 0.4);
+  border-radius: 16px;
+  padding: 8px 10px;
+  margin: 8px 0 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.campaign-promo-badge {
+  font-size: 11px;
+  font-weight: 800;
+  color: #FFD700;
+  letter-spacing: 0.5px;
+}
+
+.campaign-promo-img {
+  width: 100%;
+  border-radius: 10px;
+  max-height: 85px;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.campaign-promo-slogan {
+  width: 160px;
+  max-width: 70%;
+  height: auto;
+}
+
 .splash-tagline {
   font-size: 16px;
   color: var(--brand-text-muted);
