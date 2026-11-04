@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" width="36" height="36">
+  <defs>
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#40C4FF"/>
+      <stop offset="50%" stop-color="#0091EA"/>
+      <stop offset="100%" stop-color="#01579B"/>
+    </linearGradient>
+  </defs>
+  <!-- Ticket Body with notches -->
+  <path d="M 4 8 L 32 8 C 33 8 34 9 34 10 L 34 15 A 3 3 0 0 0 34 21 L 34 26 C 34 27 33 28 32 28 L 4 28 C 3 28 2 27 2 26 L 2 21 A 3 3 0 0 0 2 15 L 2 10 C 2 9 3 8 4 8 Z" fill="url(#blueGrad)" stroke="#004D40" stroke-width="1.2"/>
+  <!-- Dotted tear line -->
+  <line x1="24" y1="9" x2="24" y2="27" stroke="#FFF" stroke-width="1.2" stroke-dasharray="2,2"/>
+  <!-- Star / VIP text -->
+  <text x="13" y="21" font-family="sans-serif" font-weight="900" font-size="9" fill="#FFFFFF" text-anchor="middle">VIP</text>
+  <circle cx="28.5" cy="18" r="2.5" fill="#FFD54F"/>
+</svg>

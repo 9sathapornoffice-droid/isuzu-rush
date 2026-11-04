@@ -277,6 +277,93 @@ document.addEventListener('DOMContentLoaded', () => {
     game.start(gameConfig);
   }
 
+  // --- REAL PLAYER SCORES STORAGE (Zero Fake Data) ---
+  function getLocalRealScores() {
+    try {
+      const raw = localStorage.getItem('isuzu_rush_real_scores');
+      let list = raw ? JSON.parse(raw) : [];
+
+      // Auto-migrate: If list is empty but saved player has a previous best score, register it!
+      if (list.length === 0) {
+        const player = getSavedPlayer();
+        const best = parseInt(localStorage.getItem('isuzu_rush_best') || '0', 10);
+        if (player && player.nickname && best > 0) {
+          list.push({
+            playerUuid: player.playerUuid || 'local_1',
+            nickname: player.nickname.trim(),
+            score: best,
+            date: new Date().toISOString()
+          });
+          localStorage.setItem('isuzu_rush_real_scores', JSON.stringify(list));
+        }
+      }
+      return list;
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveLocalRealScore(player, score, distance, coins, tickets) {
+    if (!player || !player.nickname || typeof score !== 'number' || score <= 0) return;
+    const list = getLocalRealScores();
+    const cleanNick = player.nickname.trim();
+    const existingIdx = list.findIndex(item => 
+      (item.playerUuid && player.playerUuid && item.playerUuid === player.playerUuid) ||
+      (item.nickname && item.nickname.trim().toLowerCase() === cleanNick.toLowerCase())
+    );
+    const now = new Date().toISOString();
+
+    if (existingIdx >= 0) {
+      // Update score if new score is higher or equal
+      if (score >= list[existingIdx].score) {
+        list[existingIdx].score = score;
+        list[existingIdx].distance = Math.max(list[existingIdx].distance || 0, distance || 0);
+        list[existingIdx].coins = Math.max(list[existingIdx].coins || 0, coins || 0);
+        list[existingIdx].tickets = Math.max(list[existingIdx].tickets || 0, tickets || 0);
+        list[existingIdx].date = now;
+      }
+    } else {
+      list.push({
+        playerUuid: player.playerUuid || ('local_' + Date.now()),
+        nickname: cleanNick,
+        score: score,
+        distance: distance || 0,
+        coins: coins || 0,
+        tickets: tickets || 0,
+        date: now
+      });
+    }
+
+    localStorage.setItem('isuzu_rush_real_scores', JSON.stringify(list));
+  }
+
+  function getFilteredRealScores(period = 'all') {
+    const allScores = getLocalRealScores();
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const startOfWeek = startOfToday - (7 * 24 * 60 * 60 * 1000);
+
+    const filtered = allScores.filter(item => {
+      if (period === 'all') return true;
+      const itemTime = item.date ? new Date(item.date).getTime() : now.getTime();
+      if (period === 'today') return itemTime >= startOfToday;
+      if (period === 'week') return itemTime >= startOfWeek;
+      return true;
+    });
+
+    // Sort descending by score
+    filtered.sort((a, b) => b.score - a.score);
+
+    // Assign true ranks
+    return filtered.map((item, index) => ({
+      rank: index + 1,
+      playerUuid: item.playerUuid,
+      nickname: item.nickname,
+      score: item.score,
+      date: item.date
+    }));
+  }
+
   // --- GAME OVER & SUBMIT SCORE ---
   async function handleGameOver(stats) {
     const player = getSavedPlayer();
@@ -291,7 +378,24 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('isuzu_rush_best', String(newBest));
 
     document.getElementById('resBestScore').textContent = newBest;
-    let finalRank = 12;
+
+    // Save to real leaderboard storage immediately
+    if (player && player.nickname) {
+      saveLocalRealScore(player, stats.score, stats.distance, stats.carrots, stats.tickets);
+    }
+
+    // Calculate REAL rank among actual players
+    const rankedList = getFilteredRealScores('all');
+    let finalRank = 1;
+    if (player && player.nickname) {
+      const myIdx = rankedList.findIndex(item => 
+        (item.playerUuid && player.playerUuid && item.playerUuid === player.playerUuid) ||
+        (item.nickname && item.nickname.trim().toLowerCase() === player.nickname.trim().toLowerCase())
+      );
+      if (myIdx >= 0) {
+        finalRank = myIdx + 1;
+      }
+    }
 
     const mascotImgEl = document.getElementById('resMascotImg');
     const cheerMsgEl = document.getElementById('resCheerMsg');
@@ -316,7 +420,7 @@ document.addEventListener('DOMContentLoaded', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sessionToken: activeSessionToken,
-          playerUuid: player.playerUuid,
+          playerUuid: player ? player.playerUuid : '',
           score: stats.score,
           distance: stats.distance,
           coins: stats.carrots || 0,
@@ -327,10 +431,12 @@ document.addEventListener('DOMContentLoaded', () => {
         })
       });
 
-      const data = await res.json();
-      if (res.ok && data.success) {
-        document.getElementById('resBestScore').textContent = data.personalBest;
-        updateRankView(data.currentRank || 1);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('resBestScore').textContent = data.personalBest;
+          updateRankView(data.currentRank || 1);
+        }
       }
     } catch (e) {}
   }
@@ -345,7 +451,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('btnShareScore')?.addEventListener('click', () => {
     const score = document.getElementById('resScore').textContent;
-    const shareUrl = isFileProtocol ? 'http://localhost:3000/?src=share' : (window.location.origin + '?src=share');
+    const basePath = window.location.pathname.replace(/\/[^/]*$/, '/');
+    const shareUrl = isFileProtocol ? 'http://localhost:3000/?src=share' : `${window.location.origin}${basePath}?src=share`;
     const text = window.t('shareText', { score, url: shareUrl });
 
     if (navigator.share) {
@@ -361,47 +468,57 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Mock sample leaderboard if server is offline
-  const MOCK_LEADERBOARD = [
-    { rank: 1, nickname: 'สิงห์รถบรรทุก', score: 3850 },
-    { rank: 2, nickname: 'สายซิ่งเมืองทอง', score: 3620 },
-    { rank: 3, nickname: 'กระบะพันธุ์แกร่ง', score: 3410 },
-    { rank: 4, nickname: 'บิ๊กบอส_Turbo', score: 3150 },
-    { rank: 5, nickname: 'พี่ต้อม_DMax', score: 2980 },
-    { rank: 6, nickname: 'เสือดำ_V-Cross', score: 2840 },
-    { rank: 7, nickname: 'น้องน้ำหนึ่ง', score: 2650 },
-    { rank: 8, nickname: 'หนุ่มสุพรรณ', score: 2510 },
-    { rank: 9, nickname: 'เด็กอู่_2026', score: 2390 },
-    { rank: 10, nickname: 'ช่างตั้ม_โมดิฟาย', score: 2200 }
-  ];
-
   // --- LEADERBOARD & REALTIME POLLING ---
   async function fetchLeaderboard(period = currentLbPeriod) {
     const player = getSavedPlayer();
     const playerUuid = player ? player.playerUuid : '';
-    const container = document.getElementById('lbListContainer');
 
     try {
       const res = await fetch(`/api/leaderboard?period=${period}&playerUuid=${playerUuid}`);
+      if (!res.ok) throw new Error('API unavailable');
       const data = await res.json();
 
-      if (!res.ok || !data.success) throw new Error('API error');
+      if (!data.success) throw new Error('API error');
 
       renderLeaderboardRows(data.leaderboard, data.playerRank, player);
     } catch (e) {
-      // Offline fallback: render mock leaderboard
-      const localBest = parseInt(localStorage.getItem('isuzu_rush_best') || '0', 10);
-      renderLeaderboardRows(MOCK_LEADERBOARD, { rank: 12, score: localBest }, player);
+      // Real players fallback (NO FAKE / MOCK DATA)
+      const rankedList = getFilteredRealScores(period);
+      let playerRank = null;
+      if (player && player.nickname) {
+        const myRankItem = rankedList.find(item => 
+          (item.playerUuid && player.playerUuid && item.playerUuid === player.playerUuid) ||
+          (item.nickname && item.nickname.trim().toLowerCase() === player.nickname.trim().toLowerCase())
+        );
+        const myBest = parseInt(localStorage.getItem('isuzu_rush_best') || '0', 10);
+        if (myRankItem) {
+          playerRank = { rank: myRankItem.rank, score: myRankItem.score };
+        } else if (myBest > 0) {
+          playerRank = { rank: rankedList.length + 1, score: myBest };
+        }
+      }
+
+      renderLeaderboardRows(rankedList, playerRank, player);
     }
   }
 
   function renderLeaderboardRows(list, playerRank, player) {
     const container = document.getElementById('lbListContainer');
     if (!list || list.length === 0) {
-      container.innerHTML = `<div class="lb-empty">${window.t('noData')}</div>`;
+      container.innerHTML = `
+        <div class="lb-empty" style="padding: 40px 16px; text-align: center; color: var(--text-muted); font-size: 14px; line-height: 1.6;">
+          🏁 ยังไม่มีข้อมูลคะแนนของผู้เล่นจริงในรอบนี้<br>
+          <span style="color: var(--brand-red); font-weight: 700; display: inline-block; margin-top: 6px;">
+            มากด "เริ่มเล่น" เพื่อเป็นอันดับ 1 คนแรกกันเถอะ!
+          </span>
+        </div>
+      `;
     } else {
       container.innerHTML = list.map(item => {
-        const isCurrentPlayer = player && (item.playerUuid === player.playerUuid || item.nickname === player.nickname);
+        const isCurrentPlayer = player && (
+          (item.playerUuid && player.playerUuid && item.playerUuid === player.playerUuid) ||
+          (item.nickname && player.nickname && item.nickname.trim().toLowerCase() === player.nickname.trim().toLowerCase())
+        );
         const medal = item.rank === 1 ? '🥇' : item.rank === 2 ? '🥈' : item.rank === 3 ? '🥉' : `#${item.rank}`;
         return `
           <div class="lb-row ${item.rank <= 3 ? 'top-' + item.rank : ''} ${isCurrentPlayer ? 'is-me' : ''}">
@@ -414,7 +531,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const pinnedEl = document.getElementById('lbPinnedPlayer');
-    if (player && playerRank) {
+    if (player && playerRank && playerRank.score > 0) {
       pinnedEl.style.display = 'flex';
       pinnedEl.innerHTML = `
         <div class="lb-rank">#${playerRank.rank}</div>

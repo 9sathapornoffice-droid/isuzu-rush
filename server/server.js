@@ -12,14 +12,12 @@ const crypto = require('crypto');
 const db = require('./db');
 const antiCheat = require('./antiCheat');
 const profanity = require('./profanity');
-const seed = require('./seed');
 
 const PORT = process.env.PORT || 3000;
 const PUBLIC_DIR = path.join(__dirname, '..', 'public');
 
-// Initialize Database & Seed data if empty
+// Initialize Database (Zero fake seed data - real players only)
 db.initDatabase();
-seed.seedDatabase();
 
 // In-memory active admin tokens
 const adminSessions = new Set();

@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 220" width="160" height="220">
+  <defs>
+    <linearGradient id="suitGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#5B6FCF"/>
+      <stop offset="60%" stop-color="#4A5BB5"/>
+      <stop offset="100%" stop-color="#32418C"/>
+    </linearGradient>
+    <linearGradient id="furGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#EDEDED"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Ears Swept Back by Wind -->
+  <path d="M 42 75 C 22 55 10 30 20 18 C 30 8 45 42 55 72 Z" fill="url(#furGrad)" stroke="#222" stroke-width="2.5"/>
+  <path d="M 40 68 C 24 50 16 32 23 24 C 29 18 39 42 48 64 Z" fill="#FFAEC9"/>
+
+  <path d="M 85 75 C 72 52 58 26 70 16 C 80 8 92 40 98 70 Z" fill="url(#furGrad)" stroke="#222" stroke-width="2.5"/>
+  <path d="M 85 68 C 74 48 64 28 72 22 C 78 18 86 40 92 64 Z" fill="#FFAEC9"/>
+
+  <!-- Tail -->
+  <circle cx="28" cy="162" r="14" fill="#FFFFFF" stroke="#222" stroke-width="2"/>
+
+  <!-- Left Leg (Trailing Back) -->
+  <rect x="36" y="152" width="16" height="32" fill="#4A5BB5" rx="4" transform="rotate(-30 44 168)"/>
+  <ellipse cx="26" cy="198" rx="18" ry="10" fill="#DD0000" stroke="#222" stroke-width="2" transform="rotate(-20 26 198)"/>
+
+  <!-- Right Leg (Stepping Forward) -->
+  <rect x="88" y="152" width="16" height="32" fill="#4A5BB5" rx="4" transform="rotate(35 96 168)"/>
+  <ellipse cx="122" cy="196" rx="18" ry="10" fill="#DD0000" stroke="#222" stroke-width="2" transform="rotate(25 122 196)"/>
+
+  <!-- Jumpsuit Body (Leaning Forward) -->
+  <g transform="skewX(-8)">
+    <path d="M 44 115 L 106 115 C 112 115 116 128 114 162 C 114 168 108 172 100 172 L 50 172 C 42 172 36 168 36 162 C 34 128 38 115 44 115 Z" fill="url(#suitGrad)" stroke="#222" stroke-width="2.5"/>
+    <path d="M 52 115 L 75 132 L 98 115 Z" fill="#DD0000" stroke="#222" stroke-width="1.5"/>
+    <rect x="42" y="152" width="66" height="8" fill="#222" rx="2"/>
+    <rect x="70" y="150" width="10" height="12" fill="#FFD700" stroke="#222" stroke-width="1.2" rx="2"/>
+    <ellipse cx="60" cy="138" rx="8" ry="5" fill="#FFFFFF" stroke="#DD0000" stroke-width="1.2"/>
+    <text x="60" y="141" font-family="sans-serif" font-weight="900" font-size="5" fill="#DD0000" text-anchor="middle">TSH</text>
+  </g>
+
+  <!-- Left Arm (Pumping Forward) -->
+  <path d="M 42 120 L 20 134 C 16 137 18 143 23 143 L 46 132 Z" fill="url(#suitGrad)" stroke="#222" stroke-width="2"/>
+  <circle cx="16" cy="138" r="8" fill="#FFFFFF" stroke="#222" stroke-width="1.5"/>
+
+  <!-- Right Arm (Pumping Back) -->
+  <path d="M 106 120 L 130 134 C 134 137 132 143 127 143 L 102 132 Z" fill="url(#suitGrad)" stroke="#222" stroke-width="2"/>
+  <circle cx="134" cy="138" r="8" fill="#FFFFFF" stroke="#222" stroke-width="1.5"/>
+
+  <!-- Head (Tilted Forward) -->
+  <g transform="translate(6, 4)">
+    <ellipse cx="75" cy="90" rx="36" ry="32" fill="url(#furGrad)" stroke="#222" stroke-width="2.5"/>
+    <ellipse cx="50" cy="98" rx="6" ry="4" fill="#FFB7B2" opacity="0.6"/>
+    <ellipse cx="100" cy="98" rx="6" ry="4" fill="#FFB7B2" opacity="0.6"/>
+    <!-- Determined Runner Eyes -->
+    <ellipse cx="64" cy="85" rx="6.5" ry="8" fill="#1A1A1A"/>
+    <circle cx="62" cy="82" r="2.5" fill="#FFFFFF"/>
+    <ellipse cx="90" cy="85" rx="6.5" ry="8" fill="#1A1A1A"/>
+    <circle cx="88" cy="82" r="2.5" fill="#FFFFFF"/>
+    <!-- Confident Grin -->
+    <polygon points="75,93 72,90 78,90" fill="#FF7597"/>
+    <path d="M 70 96 Q 78 102 84 96" fill="none" stroke="#222" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+</svg>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 28" width="36" height="28">
+  <defs>
+    <linearGradient id="rockGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#9E9E9E"/>
+      <stop offset="60%" stop-color="#616161"/>
+      <stop offset="100%" stop-color="#424242"/>
+    </linearGradient>
+  </defs>
+  <polygon points="3,26 8,15 15,6 23,4 31,12 34,26" fill="url(#rockGrad)" stroke="#212121" stroke-width="1.5"/>
+  <polygon points="8,15 15,6 18,18" fill="#757575"/>
+  <polygon points="18,18 23,4 31,12" fill="#BDBDBD" opacity="0.6"/>
+  <polygon points="8,15 18,18 12,26 3,26" fill="#424242" opacity="0.8"/>
+  <line x1="20" y1="12" x2="25" y2="20" stroke="#37474F" stroke-width="1"/>
+</svg>

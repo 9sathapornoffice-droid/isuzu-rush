@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 38 38" width="38" height="38">
+  <defs>
+    <linearGradient id="goldKey" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFE082"/>
+      <stop offset="50%" stop-color="#FFB300"/>
+      <stop offset="100%" stop-color="#FF8F00"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Modern Smart Car Key Fob with TSH Badge -->
+  <!-- Key Blade -->
+  <path d="M 22 18 L 35 18 L 35 22 L 31 22 L 31 20 L 27 20 L 27 22 L 22 22 Z" fill="#CFD8DC" stroke="#37474F" stroke-width="1.2"/>
+
+  <!-- Fob Remote Body -->
+  <rect x="3" y="10" width="22" height="18" rx="5" fill="#212121" stroke="#424242" stroke-width="1.5"/>
+
+  <!-- TSH Golden Logo Tag -->
+  <circle cx="14" cy="19" r="6.5" fill="url(#goldKey)" stroke="#FF6F00" stroke-width="1"/>
+  <text x="14" y="21.5" font-family="'Kanit', sans-serif" font-weight="900" font-size="4.5" fill="#1A1A1A" text-anchor="middle">TSH</text>
+
+  <!-- Keyring loop -->
+  <circle cx="4" cy="19" r="2" fill="none" stroke="#90A4AE" stroke-width="1.5"/>
+</svg>

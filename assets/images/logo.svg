@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 100" width="320" height="100">
+  <defs>
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="50%" stop-color="#F5F5F5"/>
+      <stop offset="100%" stop-color="#E0E0E0"/>
+    </linearGradient>
+    <linearGradient id="rushGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#FF3D00"/>
+      <stop offset="50%" stop-color="#E60012"/>
+      <stop offset="100%" stop-color="#B71C1C"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="3" dy="4" stdDeviation="3" flood-color="#000000" flood-opacity="0.8"/>
+    </filter>
+  </defs>
+
+  <!-- Dynamic slanted racing badge background -->
+  <polygon points="15,10 315,10 295,90 5,90" fill="#151515" stroke="#E60012" stroke-width="3" filter="url(#shadow)"/>
+  
+  <!-- Speed lines in background -->
+  <line x1="30" y1="20" x2="120" y2="20" stroke="#E60012" stroke-width="2" opacity="0.6"/>
+  <line x1="20" y1="26" x2="80" y2="26" stroke="#E60012" stroke-width="3" opacity="0.4"/>
+  <line x1="220" y1="74" x2="290" y2="74" stroke="#FFF" stroke-width="2" opacity="0.3"/>
+
+  <!-- Brand Typography -->
+  <g transform="skewX(-14)">
+    <text x="50" y="48" font-family="'Kanit', 'Arial Black', sans-serif" font-weight="900" font-size="34" fill="url(#textGrad)" letter-spacing="4">ISUZU</text>
+    <text x="175" y="76" font-family="'Kanit', 'Arial Black', sans-serif" font-weight="900" font-size="44" fill="url(#rushGrad)" font-style="italic" stroke="#FFFFFF" stroke-width="1.2" letter-spacing="2">RUSH</text>
+  </g>
+
+  <!-- Accent star badge -->
+  <polygon points="290,20 293,27 301,27 295,32 297,39 290,34 283,39 285,32 279,27 287,27" fill="#FFD700"/>
+</svg>

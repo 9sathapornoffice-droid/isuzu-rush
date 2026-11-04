@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 38 28" width="38" height="28">
+  <defs>
+    <linearGradient id="boxGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FF3344"/>
+      <stop offset="60%" stop-color="#DD0000"/>
+      <stop offset="100%" stop-color="#990000"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Heavy Duty Red Metal Toolbox -->
+  <!-- Main Box -->
+  <rect x="4" y="9" width="30" height="18" rx="2" fill="url(#boxGrad)" stroke="#1A1A1A" stroke-width="1.5"/>
+  <!-- Box Lid -->
+  <rect x="3" y="6" width="32" height="5" rx="1.5" fill="#DD0000" stroke="#1A1A1A" stroke-width="1.2"/>
+  <!-- Top Handle -->
+  <path d="M 14 6 L 14 2 L 24 2 L 24 6" fill="none" stroke="#ECEFF1" stroke-width="2" stroke-linecap="round"/>
+  <!-- Metal Latches -->
+  <rect x="9" y="8" width="4" height="6" fill="#CFD8DC" stroke="#263238" stroke-width="0.8" rx="0.5"/>
+  <rect x="25" y="8" width="4" height="6" fill="#CFD8DC" stroke="#263238" stroke-width="0.8" rx="0.5"/>
+  <!-- Center Badge / Text -->
+  <rect x="15" y="15" width="8" height="4" fill="#222" rx="0.5"/>
+  <line x1="16" y1="17" x2="22" y2="17" stroke="#FFF" stroke-width="1"/>
+</svg>
