@@ -235,7 +235,7 @@ class RabbitPlayer {
       }
     } else {
       // 3. Ground Running Cycle
-      this.bobTimer += speed * 0.015 * dt * 60;
+      this.bobTimer += (speed / 28) * dt;
       this.tiltAngle = 0.08 + Math.sin(this.bobTimer) * 0.03;
 
       // Running animation frame advancement
@@ -247,7 +247,7 @@ class RabbitPlayer {
       }
 
       // Footstep dust puffs
-      if (Math.random() < 0.25 * (dt * 60)) {
+      if (Math.random() < 12 * dt) {
         this.dustParticles.push({
           x: this.x + 16,
           y: this.baseY + this.height - 6,

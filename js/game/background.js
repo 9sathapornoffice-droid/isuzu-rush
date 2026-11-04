@@ -36,12 +36,18 @@ class BackgroundManager {
   }
 
   update(dt, speed, distance) {
-    // 1. Framerate-independent parallax layer scrolling
-    const scrollFactor = dt * 60;
-    this.layer1Offset = (this.layer1Offset + (speed * 0.08 / 6) * scrollFactor) % this.w;
-    this.layer2Offset = (this.layer2Offset + (speed * 0.25 / 6) * scrollFactor) % this.w;
-    this.layer3Offset = (this.layer3Offset + (speed * 0.55 / 6) * scrollFactor) % this.w;
-    this.roadOffset = (this.roadOffset + (speed * 0.85 / 6) * scrollFactor) % 40;
+    // 1. Framerate-independent parallax scrolling synchronized with real ground speed:
+    // - Road markings: 1.0x (perfect 1:1 match with player running and obstacles on the road)
+    this.roadOffset = (this.roadOffset + speed * dt) % 40;
+
+    // - Near layer (street poles, roadside billboards, roadside trees): 0.55x
+    this.layer3Offset = (this.layer3Offset + speed * 0.55 * dt) % this.w;
+
+    // - Mid layer (city buildings, rolling hills): 0.22x
+    this.layer2Offset = (this.layer2Offset + speed * 0.22 * dt) % this.w;
+
+    // - Far layer (distant mountain skyline, clouds): 0.05x
+    this.layer1Offset = (this.layer1Offset + speed * 0.05 * dt) % this.w;
 
     // 2. Biome determination: Every 350 distance units, cycle 0 -> 1 -> 2 -> 3 -> loop
     const transitionDist = this.gameConfig.biome?.transitionDistance || 350;
