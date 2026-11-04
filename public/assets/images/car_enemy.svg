@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 55" width="120" height="55">
+  <defs>
+    <linearGradient id="enemyCarGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#546E7A"/>
+      <stop offset="60%" stop-color="#37474F"/>
+      <stop offset="100%" stop-color="#212121"/>
+    </linearGradient>
+  </defs>
+  <!-- Enemy Sedan Car Body -->
+  <path d="M 8 38 L 112 38 C 116 38 118 34 116 30 L 105 22 L 80 12 L 35 12 L 20 22 L 5 26 C 2 30 2 35 8 38 Z" fill="url(#enemyCarGrad)" stroke="#111" stroke-width="2"/>
+  <!-- Windows -->
+  <path d="M 36 15 L 77 15 L 98 23 L 24 23 Z" fill="#90CAF9" opacity="0.8" stroke="#111" stroke-width="1.2"/>
+  <line x1="58" y1="15" x2="58" y2="23" stroke="#222" stroke-width="2"/>
+  <!-- Headlights & Taillights -->
+  <rect x="4" y="27" width="5" height="4" fill="#FFEB3B" rx="1"/>
+  <rect x="114" y="26" width="4" height="6" fill="#F44336" rx="1"/>
+  <!-- Wheels -->
+  <circle cx="28" cy="40" r="10" fill="#212121" stroke="#424242" stroke-width="2"/>
+  <circle cx="28" cy="40" r="4" fill="#9E9E9E"/>
+  <circle cx="92" cy="40" r="10" fill="#212121" stroke="#424242" stroke-width="2"/>
+  <circle cx="92" cy="40" r="4" fill="#9E9E9E"/>
+</svg>

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 36" width="36" height="36">
+  <defs>
+    <linearGradient id="carrotGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF9100"/>
+      <stop offset="50%" stop-color="#FF6D00"/>
+      <stop offset="100%" stop-color="#E65100"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Green Carrot Leaves -->
+  <path d="M 24 10 C 26 4 33 2 34 3 C 34 8 28 11 24 12 Z" fill="#00E676" stroke="#1B5E20" stroke-width="1"/>
+  <path d="M 23 9 C 24 2 28 0 30 1 C 30 5 26 8 23 9 Z" fill="#69F0AE" stroke="#1B5E20" stroke-width="1"/>
+  <path d="M 25 12 C 30 11 34 13 33 15 C 29 16 26 14 25 12 Z" fill="#00C853" stroke="#1B5E20" stroke-width="1"/>
+
+  <!-- Orange Carrot Body -->
+  <path d="M 26 9 C 28 11 25 15 22 18 L 4 33 C 3 34 2 34 2 33 C 2 32 3 31 4 30 L 19 12 C 22 9 24 8 26 9 Z" fill="url(#carrotGrad)" stroke="#BF360C" stroke-width="1.2"/>
+
+  <!-- Carrot Ridge Lines -->
+  <line x1="20" y1="13" x2="22" y2="16" stroke="#FFF" stroke-width="1" opacity="0.7"/>
+  <line x1="15" y1="18" x2="17" y2="21" stroke="#FFF" stroke-width="1" opacity="0.7"/>
+  <line x1="10" y1="23" x2="12" y2="26" stroke="#FFF" stroke-width="1" opacity="0.7"/>
+</svg>

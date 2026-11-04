@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 220" width="160" height="220">
+  <defs>
+    <linearGradient id="suitGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#5B6FCF"/>
+      <stop offset="60%" stop-color="#4A5BB5"/>
+      <stop offset="100%" stop-color="#32418C"/>
+    </linearGradient>
+    <linearGradient id="furGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#EDEDED"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Left Ear (Slightly tilted playfully) -->
+  <path d="M 50 75 C 32 42 26 12 42 4 C 55 -2 64 35 63 72 Z" fill="url(#furGrad)" stroke="#222" stroke-width="2.5"/>
+  <path d="M 50 65 C 38 42 34 18 43 12 C 51 8 57 35 56 62 Z" fill="#FFAEC9"/>
+
+  <!-- Right Ear -->
+  <path d="M 98 75 C 114 42 118 12 104 4 C 91 -2 84 35 86 72 Z" fill="url(#furGrad)" stroke="#222" stroke-width="2.5"/>
+  <path d="M 97 65 C 108 42 110 18 103 12 C 95 8 90 35 92 62 Z" fill="#FFAEC9"/>
+
+  <!-- Fluffy Tail -->
+  <circle cx="34" cy="165" r="14" fill="#FFFFFF" stroke="#222" stroke-width="2"/>
+
+  <!-- Legs & Shoes -->
+  <rect x="52" y="160" width="16" height="28" fill="#4A5BB5" rx="4"/>
+  <ellipse cx="54" cy="195" rx="18" ry="10" fill="#DD0000" stroke="#222" stroke-width="2"/>
+  <path d="M 40 196 L 68 196" stroke="#FFF" stroke-width="3" stroke-linecap="round"/>
+
+  <rect x="82" y="160" width="16" height="28" fill="#4A5BB5" rx="4"/>
+  <ellipse cx="94" cy="195" rx="18" ry="10" fill="#DD0000" stroke="#222" stroke-width="2"/>
+  <path d="M 80 196 L 108 196" stroke="#FFF" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Jumpsuit Body -->
+  <path d="M 44 115 L 106 115 C 112 115 116 128 114 162 C 114 168 108 172 100 172 L 50 172 C 42 172 36 168 36 162 C 34 128 38 115 44 115 Z" fill="url(#suitGrad)" stroke="#222" stroke-width="2.5"/>
+
+  <!-- Red Collar & Belt -->
+  <path d="M 52 115 L 75 132 L 98 115 Z" fill="#DD0000" stroke="#222" stroke-width="1.5"/>
+  <rect x="42" y="152" width="66" height="8" fill="#222" rx="2"/>
+  <rect x="70" y="150" width="10" height="12" fill="#FFD700" stroke="#222" stroke-width="1.2" rx="2"/>
+
+  <!-- TSH Badge -->
+  <ellipse cx="60" cy="138" rx="8" ry="5" fill="#FFFFFF" stroke="#DD0000" stroke-width="1.2"/>
+  <text x="60" y="141" font-family="sans-serif" font-weight="900" font-size="5" fill="#DD0000" text-anchor="middle">TSH</text>
+
+  <!-- Left Arm (Resting on hip) -->
+  <path d="M 42 120 L 26 138 C 24 142 26 148 30 148 L 42 144 Z" fill="url(#suitGrad)" stroke="#222" stroke-width="2"/>
+  <circle cx="28" cy="144" r="7" fill="#FFFFFF" stroke="#222" stroke-width="1.5"/>
+
+  <!-- Right Arm & ICONIC THUMBS UP -->
+  <path d="M 108 122 L 132 115 C 138 114 140 120 136 124 L 114 136 Z" fill="url(#suitGrad)" stroke="#222" stroke-width="2"/>
+  <!-- Thumbs Up Glove Hand -->
+  <g transform="translate(136, 106)">
+    <!-- Thumb sticking straight up -->
+    <path d="M 2 12 L 2 2 C 2 -3 8 -3 8 2 L 8 12 Z" fill="#FFFFFF" stroke="#222" stroke-width="2"/>
+    <!-- Fist -->
+    <ellipse cx="6" cy="15" rx="7" ry="6" fill="#FFFFFF" stroke="#222" stroke-width="2"/>
+    <!-- Thumb sparkle -->
+    <polygon points="12,0 13,3 16,4 13,5 12,8 11,5 8,4 11,3" fill="#FFD700"/>
+  </g>
+
+  <!-- Head -->
+  <ellipse cx="75" cy="90" rx="36" ry="32" fill="url(#furGrad)" stroke="#222" stroke-width="2.5"/>
+  <ellipse cx="50" cy="98" rx="6" ry="4" fill="#FFB7B2" opacity="0.6"/>
+  <ellipse cx="100" cy="98" rx="6" ry="4" fill="#FFB7B2" opacity="0.6"/>
+
+  <!-- Big Wink / Happy Eyes -->
+  <ellipse cx="62" cy="85" rx="6.5" ry="9" fill="#1A1A1A"/>
+  <circle cx="60" cy="82" r="2.5" fill="#FFFFFF"/>
+  <circle cx="64" cy="88" r="1.2" fill="#FFFFFF"/>
+
+  <!-- Wink Right Eye (Star or crescent) -->
+  <path d="M 82 86 Q 88 80 94 86" fill="none" stroke="#222" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Nose & Big Smile with Tooth -->
+  <polygon points="75,93 72,90 78,90" fill="#FF7597"/>
+  <path d="M 68 96 Q 75 106 82 96 Z" fill="#C62828" stroke="#222" stroke-width="1.8"/>
+  <rect x="73" y="96" width="4" height="4" fill="#FFFFFF" rx="1"/>
+
+  <!-- Whiskers -->
+  <line x1="42" y1="92" x2="28" y2="90" stroke="#888" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="42" y1="96" x2="28" y2="98" stroke="#888" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="108" y1="92" x2="122" y2="90" stroke="#888" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="108" y1="96" x2="122" y2="98" stroke="#888" stroke-width="1.5" stroke-linecap="round"/>
+</svg>

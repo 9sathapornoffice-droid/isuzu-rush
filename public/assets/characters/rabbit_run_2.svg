@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 220" width="160" height="220">
+  <defs>
+    <linearGradient id="suitGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#5B6FCF"/>
+      <stop offset="60%" stop-color="#4A5BB5"/>
+      <stop offset="100%" stop-color="#32418C"/>
+    </linearGradient>
+    <linearGradient id="furGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#EDEDED"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Ears Fluttering -->
+  <path d="M 46 76 C 26 58 16 32 26 20 C 36 10 49 42 59 73 Z" fill="url(#furGrad)" stroke="#222" stroke-width="2.5"/>
+  <path d="M 44 69 C 30 52 22 34 29 26 C 35 20 43 42 52 65 Z" fill="#FFAEC9"/>
+
+  <path d="M 89 76 C 76 54 64 28 76 18 C 86 10 96 42 102 71 Z" fill="url(#furGrad)" stroke="#222" stroke-width="2.5"/>
+  <path d="M 89 69 C 78 50 68 30 76 24 C 82 20 90 42 96 65 Z" fill="#FFAEC9"/>
+
+  <circle cx="28" cy="164" r="14" fill="#FFFFFF" stroke="#222" stroke-width="2"/>
+
+  <!-- Legs Passing (Mid Stride - slightly squatted) -->
+  <rect x="52" y="156" width="16" height="30" fill="#4A5BB5" rx="4"/>
+  <ellipse cx="54" cy="196" rx="18" ry="10" fill="#DD0000" stroke="#222" stroke-width="2"/>
+
+  <rect x="78" y="156" width="16" height="30" fill="#4A5BB5" rx="4"/>
+  <ellipse cx="86" cy="196" rx="18" ry="10" fill="#DD0000" stroke="#222" stroke-width="2"/>
+
+  <g transform="skewX(-6)">
+    <path d="M 44 116 L 106 116 C 112 116 116 129 114 163 C 114 169 108 173 100 173 L 50 173 C 42 173 36 169 36 163 C 34 129 38 116 44 116 Z" fill="url(#suitGrad)" stroke="#222" stroke-width="2.5"/>
+    <path d="M 52 116 L 75 133 L 98 116 Z" fill="#DD0000" stroke="#222" stroke-width="1.5"/>
+    <rect x="42" y="153" width="66" height="8" fill="#222" rx="2"/>
+    <rect x="70" y="151" width="10" height="12" fill="#FFD700" stroke="#222" stroke-width="1.2" rx="2"/>
+    <ellipse cx="60" cy="139" rx="8" ry="5" fill="#FFFFFF" stroke="#DD0000" stroke-width="1.2"/>
+    <text x="60" y="142" font-family="sans-serif" font-weight="900" font-size="5" fill="#DD0000" text-anchor="middle">TSH</text>
+  </g>
+
+  <!-- Arms Close to Body -->
+  <circle cx="34" cy="142" r="8" fill="#FFFFFF" stroke="#222" stroke-width="1.5"/>
+  <circle cx="116" cy="142" r="8" fill="#FFFFFF" stroke="#222" stroke-width="1.5"/>
+
+  <g transform="translate(4, 6)">
+    <ellipse cx="75" cy="90" rx="36" ry="32" fill="url(#furGrad)" stroke="#222" stroke-width="2.5"/>
+    <ellipse cx="50" cy="98" rx="6" ry="4" fill="#FFB7B2" opacity="0.6"/>
+    <ellipse cx="100" cy="98" rx="6" ry="4" fill="#FFB7B2" opacity="0.6"/>
+    <ellipse cx="64" cy="85" rx="6.5" ry="8" fill="#1A1A1A"/>
+    <circle cx="62" cy="82" r="2.5" fill="#FFFFFF"/>
+    <ellipse cx="90" cy="85" rx="6.5" ry="8" fill="#1A1A1A"/>
+    <circle cx="88" cy="82" r="2.5" fill="#FFFFFF"/>
+    <polygon points="75,93 72,90 78,90" fill="#FF7597"/>
+    <path d="M 70 96 Q 78 102 84 96" fill="none" stroke="#222" stroke-width="2.2" stroke-linecap="round"/>
+  </g>
+</svg>
