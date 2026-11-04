@@ -27,6 +27,7 @@ class BackgroundManager {
     // Highway Campaign Billboard Image
     this.billboardImg = new Image();
     this.billboardImg.src = './assets/brand/campaign_banner.jpg';
+    this.billboardOffset = 0;
   }
 
   resize(w, h, roadY) {
@@ -40,14 +41,17 @@ class BackgroundManager {
     // - Road markings: 1.0x (perfect 1:1 match with player running and obstacles on the road)
     this.roadOffset = (this.roadOffset + speed * dt) % 40;
 
-    // - Near layer (street poles, roadside billboards, roadside trees): 0.55x
-    this.layer3Offset = (this.layer3Offset + speed * 0.55 * dt) % this.w;
+    // - Near layer (street light poles): 0.40x
+    this.layer3Offset = (this.layer3Offset + speed * 0.40 * dt) % 180;
 
-    // - Mid layer (city buildings, rolling hills): 0.22x
-    this.layer2Offset = (this.layer2Offset + speed * 0.22 * dt) % this.w;
+    // - Mid layer (city buildings, rolling hills): 0.16x
+    this.layer2Offset = (this.layer2Offset + speed * 0.16 * dt) % this.w;
 
-    // - Far layer (distant mountain skyline, clouds): 0.05x
-    this.layer1Offset = (this.layer1Offset + speed * 0.05 * dt) % this.w;
+    // - Highway Mega-Billboards (in mid-distance, slow, calm and readable): 0.12x
+    this.billboardOffset = (this.billboardOffset + speed * 0.12 * dt);
+
+    // - Far layer (distant mountain skyline, clouds): 0.04x
+    this.layer1Offset = (this.layer1Offset + speed * 0.04 * dt) % this.w;
 
     // 2. Biome determination: Every 350 distance units, cycle 0 -> 1 -> 2 -> 3 -> loop
     const transitionDist = this.gameConfig.biome?.transitionDistance || 350;
@@ -233,6 +237,17 @@ class BackgroundManager {
         ctx.strokeRect(x, baseY - h, 55, h);
       }
     }
+
+    // Highway Mega-Billboards (placed in mid-distance, scrolling calmly and gently at 0.12x)
+    const bbSpacing = 850;
+    const bbOffset = this.billboardOffset % bbSpacing;
+    for (let i = -1; i <= Math.ceil(this.w / bbSpacing) + 1; i++) {
+      const bx = i * bbSpacing - bbOffset;
+      if (bx > -200 && bx < this.w + 100) {
+        this.drawHighwayBillboard(ctx, bx, baseY);
+      }
+    }
+
     ctx.restore();
   }
 
@@ -240,16 +255,7 @@ class BackgroundManager {
     ctx.save();
     const baseY = this.roadY;
 
-    // 1. Highway Campaign Billboards along the road
-    const bbSpacing = 520;
-    for (let i = -1; i <= Math.ceil(this.w / bbSpacing) + 1; i++) {
-      const bx = i * bbSpacing - (this.layer3Offset * 0.95);
-      if (bx > -160 && bx < this.w + 160) {
-        this.drawHighwayBillboard(ctx, bx, baseY);
-      }
-    }
-
-    // 2. Street light poles
+    // Street light poles
     const spacing = 180;
     for (let i = -1; i <= Math.ceil(this.w / spacing) + 1; i++) {
       const x = i * spacing - this.layer3Offset;
