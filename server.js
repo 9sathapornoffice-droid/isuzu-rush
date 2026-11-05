@@ -700,7 +700,17 @@ const server = http.createServer(async (req, res) => {
     // 4. POST /api/game/start - Start game session
     if (pathname === '/api/game/start' && method === 'POST') {
       const body = await parseBody(req);
-      const player = body.playerUuid ? getPlayerByUuid(body.playerUuid) : null;
+      let player = body.playerUuid ? getPlayerByUuid(body.playerUuid) : null;
+      if (!player && body.playerUuid) {
+        player = upsertPlayer({
+          playerUuid: body.playerUuid,
+          nickname: body.nickname || 'ผู้เล่น',
+          phone: body.phone || '',
+          email: body.email || '',
+          source: body.source || 'direct',
+          pdpaConsent: 1
+        });
+      }
       const playerId = player ? player.id : 0;
       const session = createSessionToken(playerId, clientIp);
 
@@ -714,7 +724,17 @@ const server = http.createServer(async (req, res) => {
     // 5. POST /api/game/submit - Submit score
     if (pathname === '/api/game/submit' && method === 'POST') {
       const body = await parseBody(req);
-      const player = body.playerUuid ? getPlayerByUuid(body.playerUuid) : null;
+      let player = body.playerUuid ? getPlayerByUuid(body.playerUuid) : null;
+      if (!player && body.playerUuid) {
+        player = upsertPlayer({
+          playerUuid: body.playerUuid,
+          nickname: body.nickname || 'ผู้เล่น',
+          phone: body.phone || '',
+          email: body.email || '',
+          source: body.source || 'direct',
+          pdpaConsent: 1
+        });
+      }
       if (!player) {
         return sendJson(res, 400, { success: false, error: 'Player not found' });
       }
@@ -759,6 +779,44 @@ const server = http.createServer(async (req, res) => {
         personalBest: personalRank ? personalRank.score : scoreNum,
         currentRank: personalRank ? personalRank.rank : 1
       });
+    }
+
+    // 5.1 POST /api/game/sync-score - Sync existing offline / local best score
+    if (pathname === '/api/game/sync-score' && method === 'POST') {
+      const body = await parseBody(req);
+      let player = body.playerUuid ? getPlayerByUuid(body.playerUuid) : null;
+      if (!player && body.playerUuid) {
+        player = upsertPlayer({
+          playerUuid: body.playerUuid,
+          nickname: body.nickname || 'ผู้เล่น',
+          phone: body.phone || '',
+          email: body.email || '',
+          source: body.source || 'direct',
+          pdpaConsent: 1
+        });
+      }
+      if (!player) return sendJson(res, 400, { success: false, error: 'Player required' });
+
+      const scoreNum = parseInt(body.score, 10) || 0;
+      const distNum = parseInt(body.distance, 10) || 0;
+      if (scoreNum > 0) {
+        const currentRank = getPlayerRank(player.id, 'all');
+        if (!currentRank || scoreNum > currentRank.score) {
+          recordScore({
+            playerId: player.id,
+            score: scoreNum,
+            distance: distNum,
+            coins: 0,
+            tickets: 0,
+            maxCombo: 1,
+            playTimeSec: 0,
+            source: body.source || player.source,
+            sessionId: `sync_${player.id}_${Date.now()}`,
+            clientIp
+          });
+        }
+      }
+      return sendJson(res, 200, { success: true });
     }
 
     // 6. Settings & Config

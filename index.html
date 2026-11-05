@@ -4154,7 +4154,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await fetch(`${API_BASE}/api/game/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ playerUuid: player.playerUuid })
+        body: JSON.stringify({
+          playerUuid: player.playerUuid,
+          nickname: player.nickname,
+          phone: player.phone,
+          email: player.email,
+          source: detectedSource
+        })
       });
 
       const data = await res.json();
@@ -4324,6 +4330,9 @@ document.addEventListener('DOMContentLoaded', () => {
         body: JSON.stringify({
           sessionToken: activeSessionToken,
           playerUuid: player ? player.playerUuid : '',
+          nickname: player ? player.nickname : '',
+          phone: player ? player.phone : '',
+          email: player ? player.email : '',
           score: stats.score,
           distance: stats.distance,
           coins: stats.carrots || 0,
@@ -4474,6 +4483,52 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!str) return '';
     return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
   }
+
+  
+  // Auto-sync player registration and offline best scores to cloud server
+  async function syncLocalPlayerWithServer() {
+    const player = getSavedPlayer();
+    if (!player || !player.nickname) return;
+
+    try {
+      await fetch(`${API_BASE}/api/player/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          playerUuid: player.playerUuid,
+          nickname: player.nickname,
+          phone: player.phone || '',
+          email: player.email || '',
+          source: detectedSource,
+          pdpaConsent: true
+        })
+      });
+
+      const bestScore = parseInt(localStorage.getItem('isuzu_rush_best') || '0', 10);
+      const bestDistance = parseInt(localStorage.getItem('isuzu_rush_best_distance') || '0', 10);
+      if (bestScore > 0) {
+        await fetch(`${API_BASE}/api/game/sync-score`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            playerUuid: player.playerUuid,
+            nickname: player.nickname,
+            phone: player.phone || '',
+            email: player.email || '',
+            score: bestScore,
+            distance: bestDistance,
+            source: detectedSource
+          })
+        });
+      }
+
+      fetchLeaderboard(currentLbPeriod);
+    } catch (e) {
+      console.log('Sync offline:', e);
+    }
+  }
+
+  syncLocalPlayerWithServer();
 
   updateSoundButtons();
 });
