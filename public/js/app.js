@@ -38,6 +38,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const detectedSource = urlParams.get('src') || localStorage.getItem('isuzu_rush_source') || 'direct';
   localStorage.setItem('isuzu_rush_source', detectedSource);
 
+  // Central API Configuration (Supports Localhost, Cloud Server, and Offline Mode)
+  const queryApi = urlParams.get('api');
+  if (queryApi) {
+    localStorage.setItem('isuzu_rush_api_url', queryApi);
+  }
+  const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? ''
+    : (localStorage.getItem('isuzu_rush_api_url') || '');
+
   // Initialize Language
   window.setLanguage(window.getLanguage());
 
@@ -155,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       const existing = getSavedPlayer();
-      const res = await fetch('/api/player/register', {
+      const res = await fetch(`${API_BASE}/api/player/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -248,7 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let gameConfig = { playerLives: 3, baseSpeed: 6, maxSpeed: 15 };
 
     try {
-      const res = await fetch('/api/game/start', {
+      const res = await fetch(`${API_BASE}/api/game/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ playerUuid: player.playerUuid })
@@ -415,7 +424,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Submit to server if online
     try {
-      const res = await fetch('/api/game/submit', {
+      const res = await fetch(`${API_BASE}/api/game/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -474,7 +483,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const playerUuid = player ? player.playerUuid : '';
 
     try {
-      const res = await fetch(`/api/leaderboard?period=${period}&playerUuid=${playerUuid}`);
+      const res = await fetch(`${API_BASE}/api/leaderboard?period=${period}&playerUuid=${playerUuid}`);
       if (!res.ok) throw new Error('API unavailable');
       const data = await res.json();
 
