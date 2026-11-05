@@ -686,7 +686,7 @@ const server = http.createServer(async (req, res) => {
       }
 
       const player = upsertPlayer({
-        playerUuid: body.playerUuid,
+        playerUuid: body.playerUuid || body.player_uuid,
         nickname,
         phone: body.phone,
         email: body.email,
@@ -694,16 +694,29 @@ const server = http.createServer(async (req, res) => {
         source: body.source
       });
 
-      return sendJson(res, 200, { success: true, player });
+      const formattedPlayer = {
+        ...player,
+        playerUuid: player.player_uuid,
+        player_uuid: player.player_uuid
+      };
+
+      return sendJson(res, 200, { success: true, player: formattedPlayer });
     }
 
     // 4. POST /api/game/start - Start game session
     if (pathname === '/api/game/start' && method === 'POST') {
       const body = await parseBody(req);
-      let player = body.playerUuid ? getPlayerByUuid(body.playerUuid) : null;
-      if (!player && body.playerUuid) {
+      const uuid = body.playerUuid || body.player_uuid;
+      let player = uuid ? getPlayerByUuid(uuid) : null;
+      if (!player && body.phone) {
+        player = sqliteDb ? sqliteDb.prepare('SELECT * FROM players WHERE phone = ?').get(body.phone) : jsonDb.players.find(x => x.phone === body.phone);
+      }
+      if (!player && body.nickname) {
+        player = sqliteDb ? sqliteDb.prepare('SELECT * FROM players WHERE nickname = ?').get(body.nickname) : jsonDb.players.find(x => x.nickname === body.nickname);
+      }
+      if (!player) {
         player = upsertPlayer({
-          playerUuid: body.playerUuid,
+          playerUuid: uuid || `p_${crypto.randomUUID()}`,
           nickname: body.nickname || 'ผู้เล่น',
           phone: body.phone || '',
           email: body.email || '',
@@ -717,6 +730,7 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 200, {
         success: true,
         sessionToken: session.session_token,
+        playerUuid: player ? player.player_uuid : '',
         config: { playerLives: 3, baseSpeed: 210, maxSpeed: 620 }
       });
     }
@@ -724,19 +738,28 @@ const server = http.createServer(async (req, res) => {
     // 5. POST /api/game/submit - Submit score
     if (pathname === '/api/game/submit' && method === 'POST') {
       const body = await parseBody(req);
-      let player = body.playerUuid ? getPlayerByUuid(body.playerUuid) : null;
-      if (!player && body.playerUuid) {
+      const uuid = body.playerUuid || body.player_uuid;
+      let player = uuid ? getPlayerByUuid(uuid) : null;
+
+      if (!player && body.sessionToken) {
+        const sess = getGameSession(body.sessionToken);
+        if (sess && sess.player_id) player = getPlayerById(sess.player_id);
+      }
+      if (!player && body.phone) {
+        player = sqliteDb ? sqliteDb.prepare('SELECT * FROM players WHERE phone = ?').get(body.phone) : jsonDb.players.find(x => x.phone === body.phone);
+      }
+      if (!player && body.nickname) {
+        player = sqliteDb ? sqliteDb.prepare('SELECT * FROM players WHERE nickname = ?').get(body.nickname) : jsonDb.players.find(x => x.nickname === body.nickname);
+      }
+      if (!player) {
         player = upsertPlayer({
-          playerUuid: body.playerUuid,
+          playerUuid: uuid || `p_${crypto.randomUUID()}`,
           nickname: body.nickname || 'ผู้เล่น',
           phone: body.phone || '',
           email: body.email || '',
           source: body.source || 'direct',
           pdpaConsent: 1
         });
-      }
-      if (!player) {
-        return sendJson(res, 400, { success: false, error: 'Player not found' });
       }
 
       const val = validateSubmission({

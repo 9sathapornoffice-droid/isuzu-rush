@@ -3948,13 +3948,24 @@ document.addEventListener('DOMContentLoaded', () => {
   function getSavedPlayer() {
     try {
       const data = localStorage.getItem('isuzu_rush_player');
-      return data ? JSON.parse(data) : null;
+      if (!data) return null;
+      const p = JSON.parse(data);
+      if (p) {
+        const uuid = p.playerUuid || p.player_uuid || '';
+        p.playerUuid = uuid;
+        p.player_uuid = uuid;
+      }
+      return p;
     } catch (e) {
       return null;
     }
   }
 
   function savePlayer(player) {
+    if (!player) return;
+    const uuid = player.playerUuid || player.player_uuid || '';
+    player.playerUuid = uuid;
+    player.player_uuid = uuid;
     localStorage.setItem('isuzu_rush_player', JSON.stringify(player));
   }
 
@@ -4329,7 +4340,8 @@ document.addEventListener('DOMContentLoaded', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sessionToken: activeSessionToken,
-          playerUuid: player ? player.playerUuid : '',
+          playerUuid: player ? (player.playerUuid || player.player_uuid || '') : '',
+          player_uuid: player ? (player.playerUuid || player.player_uuid || '') : '',
           nickname: player ? player.nickname : '',
           phone: player ? player.phone : '',
           email: player ? player.email : '',
@@ -4462,7 +4474,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (leaderboardPollingInterval) clearInterval(leaderboardPollingInterval);
     leaderboardPollingInterval = setInterval(() => {
       fetchLeaderboard(currentLbPeriod);
-    }, 15000);
+    }, 5000);
   }
 
   // Leaderboard Tabs

@@ -469,6 +469,9 @@ body {
           <h3 class="section-title">🏆 จัดการรายชื่อผู้เล่น & คะแนน</h3>
           <div class="table-toolbar">
             <input type="text" id="adminSearchInput" class="search-input" placeholder="🔍 ค้นหาชื่อเล่น หรือเบอร์...">
+            <button id="btnManualRefresh" class="btn-admin" style="background:#0088FF; padding:8px 14px; font-size:13px;">
+              🔄 รีเฟรชข้อมูลสด
+            </button>
             <button id="btnExportTop50" class="btn-admin" style="background:#2C3E50; padding:8px 14px; font-size:13px;">
               📥 Export Top 50 (CSV)
             </button>
@@ -813,6 +816,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('btnNextPage')?.addEventListener('click', () => {
     loadPlayers(currentPage + 1, currentSearch);
+  });
+
+  // --- REAL-TIME POLLING & MANUAL REFRESH ---
+  let adminRefreshInterval = setInterval(() => {
+    if (adminToken && mainContent && mainContent.style.display !== 'none') {
+      loadStats();
+      loadPlayers(currentPage, currentSearch);
+    }
+  }, 5000);
+
+  document.getElementById('btnManualRefresh')?.addEventListener('click', () => {
+    loadStats();
+    loadPlayers(currentPage, currentSearch);
   });
 
   // --- CSV EXPORT ---
