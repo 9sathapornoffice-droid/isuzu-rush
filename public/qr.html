@@ -4,7 +4,392 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ISUZU RUSH - สร้างและดาวน์โหลด QR Code สำหรับพิมพ์แจก</title>
-  <link rel="stylesheet" href="./css/admin.css">
+  <style>
+/* ==========================================================================
+   ISUZU RUSH - Organizer Admin Dashboard Styling
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --admin-bg: #0D0E12;
+  --admin-card: #181920;
+  --admin-border: #282A36;
+  --admin-text: #F8F9FA;
+  --admin-muted: #8F95A3;
+  --brand-red: #E60012;
+  --brand-blue: #0088FF;
+  --brand-green: #00D26A;
+  --brand-gold: #FFC107;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Kanit', sans-serif;
+}
+
+body {
+  background-color: var(--admin-bg);
+  color: var(--admin-text);
+  min-height: 100vh;
+}
+
+/* Login Overlay */
+.admin-login-overlay {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at center, #24090B 0%, #0D0E12 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.login-card {
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
+  border-radius: 20px;
+  padding: 36px 32px;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
+}
+
+.login-card h2 {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.login-card p {
+  color: var(--admin-muted);
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+.login-input {
+  width: 100%;
+  padding: 14px 16px;
+  background: #101116;
+  border: 1.5px solid var(--admin-border);
+  border-radius: 12px;
+  color: #FFF;
+  font-size: 18px;
+  text-align: center;
+  letter-spacing: 4px;
+  outline: none;
+  margin-bottom: 12px;
+}
+
+.login-input:focus {
+  border-color: var(--brand-red);
+}
+
+.btn-admin {
+  background: var(--brand-red);
+  color: #FFF;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  transition: opacity 0.2s;
+}
+
+.btn-admin:hover {
+  opacity: 0.9;
+}
+
+/* Dashboard Header */
+.dashboard-header {
+  background: var(--admin-card);
+  border-bottom: 1px solid var(--admin-border);
+  padding: 16px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-brand img {
+  height: 38px;
+}
+
+.header-badge {
+  background: rgba(230, 0, 18, 0.15);
+  border: 1px solid var(--brand-red);
+  color: var(--brand-red);
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--admin-border);
+  color: var(--admin-text);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* Dashboard Container */
+.dashboard-container {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 28px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* Metrics Row */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.metric-card {
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.metric-title {
+  font-size: 13px;
+  color: var(--admin-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.metric-value {
+  font-size: 32px;
+  font-weight: 800;
+  color: #FFF;
+}
+
+/* Sections */
+.admin-section {
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
+  border-radius: 20px;
+  padding: 24px;
+}
+
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* Hourly Chart */
+.chart-flex {
+  display: flex;
+  align-items: flex-end;
+  height: 180px;
+  gap: 8px;
+  padding: 10px 0;
+  overflow-x: auto;
+}
+
+.chart-bar-col {
+  flex: 1;
+  min-width: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.chart-bar-value {
+  font-size: 11px;
+  color: var(--admin-muted);
+  margin-bottom: 4px;
+}
+
+.chart-bar-fill {
+  width: 100%;
+  background: linear-gradient(180deg, var(--brand-red) 0%, #8A000B 100%);
+  border-radius: 4px 4px 0 0;
+  min-height: 6px;
+}
+
+.chart-bar-label {
+  font-size: 10px;
+  color: var(--admin-muted);
+  margin-top: 6px;
+}
+
+/* Source Badges */
+.source-stats-list {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.source-badge {
+  background: #111218;
+  border: 1px solid var(--admin-border);
+  border-radius: 10px;
+  padding: 8px 14px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.source-name {
+  font-weight: 600;
+  color: #FFF;
+}
+
+.source-count {
+  background: var(--brand-red);
+  color: #FFF;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+/* Table */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 14px;
+}
+
+.admin-table th {
+  background: #12131A;
+  padding: 12px 16px;
+  color: var(--admin-muted);
+  font-weight: 600;
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.admin-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--admin-border);
+  vertical-align: middle;
+}
+
+.row-banned td {
+  opacity: 0.45;
+  text-decoration: line-through;
+}
+
+.score-badge {
+  font-weight: 700;
+  color: var(--brand-gold);
+}
+
+.tag-source {
+  background: #252834;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.btn-action {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-ban {
+  background: rgba(230, 0, 18, 0.2);
+  color: #FF5252;
+  border: 1px solid #FF5252;
+}
+
+.btn-unban {
+  background: rgba(0, 210, 106, 0.2);
+  color: #00D26A;
+  border: 1px solid #00D26A;
+}
+
+/* Pagination & Filter */
+.table-toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.search-input {
+  background: #111218;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  padding: 8px 14px;
+  color: #FFF;
+  font-size: 14px;
+  outline: none;
+}
+
+/* Config Grid */
+.config-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.config-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.config-group label {
+  font-size: 13px;
+  color: var(--admin-muted);
+}
+
+.config-input, .config-select {
+  background: #111218;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: #FFF;
+  font-size: 14px;
+}
+
+</style>
   <style>
     .qr-page-container {
       max-width: 860px;
@@ -54,7 +439,7 @@
 <body>
   <div class="dashboard-header">
     <div class="header-brand">
-      <img src="./assets/images/logo.svg" alt="ISUZU RUSH">
+      <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMjAgMTAwIiB3aWR0aD0iMzIwIiBoZWlnaHQ9IjEwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9InRleHRHcmFkIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI0ZGRkZGRiIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iI0Y1RjVGNSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNFMEUwRTAiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9InJ1c2hHcmFkIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNGRjNEMDAiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSI1MCUiIHN0b3AtY29sb3I9IiNFNjAwMTIiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjQjcxQzFDIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGZpbHRlciBpZD0ic2hhZG93IiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTMwJSIgaGVpZ2h0PSIxMzAlIj4KICAgICAgPGZlRHJvcFNoYWRvdyBkeD0iMyIgZHk9IjQiIHN0ZERldmlhdGlvbj0iMyIgZmxvb2QtY29sb3I9IiMwMDAwMDAiIGZsb29kLW9wYWNpdHk9IjAuOCIvPgogICAgPC9maWx0ZXI+CiAgPC9kZWZzPgoKICA8IS0tIER5bmFtaWMgc2xhbnRlZCByYWNpbmcgYmFkZ2UgYmFja2dyb3VuZCAtLT4KICA8cG9seWdvbiBwb2ludHM9IjE1LDEwIDMxNSwxMCAyOTUsOTAgNSw5MCIgZmlsbD0iIzE1MTUxNSIgc3Ryb2tlPSIjRTYwMDEyIiBzdHJva2Utd2lkdGg9IjMiIGZpbHRlcj0idXJsKCNzaGFkb3cpIi8+CiAgCiAgPCEtLSBTcGVlZCBsaW5lcyBpbiBiYWNrZ3JvdW5kIC0tPgogIDxsaW5lIHgxPSIzMCIgeTE9IjIwIiB4Mj0iMTIwIiB5Mj0iMjAiIHN0cm9rZT0iI0U2MDAxMiIgc3Ryb2tlLXdpZHRoPSIyIiBvcGFjaXR5PSIwLjYiLz4KICA8bGluZSB4MT0iMjAiIHkxPSIyNiIgeDI9IjgwIiB5Mj0iMjYiIHN0cm9rZT0iI0U2MDAxMiIgc3Ryb2tlLXdpZHRoPSIzIiBvcGFjaXR5PSIwLjQiLz4KICA8bGluZSB4MT0iMjIwIiB5MT0iNzQiIHgyPSIyOTAiIHkyPSI3NCIgc3Ryb2tlPSIjRkZGIiBzdHJva2Utd2lkdGg9IjIiIG9wYWNpdHk9IjAuMyIvPgoKICA8IS0tIEJyYW5kIFR5cG9ncmFwaHkgLS0+CiAgPGcgdHJhbnNmb3JtPSJza2V3WCgtMTQpIj4KICAgIDx0ZXh0IHg9IjUwIiB5PSI0OCIgZm9udC1mYW1pbHk9IidLYW5pdCcsICdBcmlhbCBCbGFjaycsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI5MDAiIGZvbnQtc2l6ZT0iMzQiIGZpbGw9InVybCgjdGV4dEdyYWQpIiBsZXR0ZXItc3BhY2luZz0iNCI+SVNVWlU8L3RleHQ+CiAgICA8dGV4dCB4PSIxNzUiIHk9Ijc2IiBmb250LWZhbWlseT0iJ0thbml0JywgJ0FyaWFsIEJsYWNrJywgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjkwMCIgZm9udC1zaXplPSI0NCIgZmlsbD0idXJsKCNydXNoR3JhZCkiIGZvbnQtc3R5bGU9Iml0YWxpYyIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjEuMiIgbGV0dGVyLXNwYWNpbmc9IjIiPlJVU0g8L3RleHQ+CiAgPC9nPgoKICA8IS0tIEFjY2VudCBzdGFyIGJhZGdlIC0tPgogIDxwb2x5Z29uIHBvaW50cz0iMjkwLDIwIDI5MywyNyAzMDEsMjcgMjk1LDMyIDI5NywzOSAyOTAsMzQgMjgzLDM5IDI4NSwzMiAyNzksMjcgMjg3LDI3IiBmaWxsPSIjRkZENzAwIi8+Cjwvc3ZnPgo=" alt="ISUZU RUSH">
       <span class="header-badge">QR CODE GENERATOR</span>
     </div>
     <div class="header-actions">
@@ -110,7 +495,7 @@
     <div style="text-align:center;">
       <h3 style="margin-bottom:12px; font-size:16px; color:var(--admin-muted);">ตัวอย่างการ์ดพิมพ์จริง (Print Preview)</h3>
       <div id="printableCard" class="qr-card-preview">
-        <img src="./assets/images/logo.svg" style="width:200px; height:auto;" alt="ISUZU RUSH">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMjAgMTAwIiB3aWR0aD0iMzIwIiBoZWlnaHQ9IjEwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9InRleHRHcmFkIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI0ZGRkZGRiIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iI0Y1RjVGNSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNFMEUwRTAiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9InJ1c2hHcmFkIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNGRjNEMDAiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSI1MCUiIHN0b3AtY29sb3I9IiNFNjAwMTIiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjQjcxQzFDIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGZpbHRlciBpZD0ic2hhZG93IiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTMwJSIgaGVpZ2h0PSIxMzAlIj4KICAgICAgPGZlRHJvcFNoYWRvdyBkeD0iMyIgZHk9IjQiIHN0ZERldmlhdGlvbj0iMyIgZmxvb2QtY29sb3I9IiMwMDAwMDAiIGZsb29kLW9wYWNpdHk9IjAuOCIvPgogICAgPC9maWx0ZXI+CiAgPC9kZWZzPgoKICA8IS0tIER5bmFtaWMgc2xhbnRlZCByYWNpbmcgYmFkZ2UgYmFja2dyb3VuZCAtLT4KICA8cG9seWdvbiBwb2ludHM9IjE1LDEwIDMxNSwxMCAyOTUsOTAgNSw5MCIgZmlsbD0iIzE1MTUxNSIgc3Ryb2tlPSIjRTYwMDEyIiBzdHJva2Utd2lkdGg9IjMiIGZpbHRlcj0idXJsKCNzaGFkb3cpIi8+CiAgCiAgPCEtLSBTcGVlZCBsaW5lcyBpbiBiYWNrZ3JvdW5kIC0tPgogIDxsaW5lIHgxPSIzMCIgeTE9IjIwIiB4Mj0iMTIwIiB5Mj0iMjAiIHN0cm9rZT0iI0U2MDAxMiIgc3Ryb2tlLXdpZHRoPSIyIiBvcGFjaXR5PSIwLjYiLz4KICA8bGluZSB4MT0iMjAiIHkxPSIyNiIgeDI9IjgwIiB5Mj0iMjYiIHN0cm9rZT0iI0U2MDAxMiIgc3Ryb2tlLXdpZHRoPSIzIiBvcGFjaXR5PSIwLjQiLz4KICA8bGluZSB4MT0iMjIwIiB5MT0iNzQiIHgyPSIyOTAiIHkyPSI3NCIgc3Ryb2tlPSIjRkZGIiBzdHJva2Utd2lkdGg9IjIiIG9wYWNpdHk9IjAuMyIvPgoKICA8IS0tIEJyYW5kIFR5cG9ncmFwaHkgLS0+CiAgPGcgdHJhbnNmb3JtPSJza2V3WCgtMTQpIj4KICAgIDx0ZXh0IHg9IjUwIiB5PSI0OCIgZm9udC1mYW1pbHk9IidLYW5pdCcsICdBcmlhbCBCbGFjaycsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI5MDAiIGZvbnQtc2l6ZT0iMzQiIGZpbGw9InVybCgjdGV4dEdyYWQpIiBsZXR0ZXItc3BhY2luZz0iNCI+SVNVWlU8L3RleHQ+CiAgICA8dGV4dCB4PSIxNzUiIHk9Ijc2IiBmb250LWZhbWlseT0iJ0thbml0JywgJ0FyaWFsIEJsYWNrJywgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjkwMCIgZm9udC1zaXplPSI0NCIgZmlsbD0idXJsKCNydXNoR3JhZCkiIGZvbnQtc3R5bGU9Iml0YWxpYyIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjEuMiIgbGV0dGVyLXNwYWNpbmc9IjIiPlJVU0g8L3RleHQ+CiAgPC9nPgoKICA8IS0tIEFjY2VudCBzdGFyIGJhZGdlIC0tPgogIDxwb2x5Z29uIHBvaW50cz0iMjkwLDIwIDI5MywyNyAzMDEsMjcgMjk1LDMyIDI5NywzOSAyOTAsMzQgMjgzLDM5IDI4NSwzMiAyNzksMjcgMjg3LDI3IiBmaWxsPSIjRkZENzAwIi8+Cjwvc3ZnPgo=" style="width:200px; height:auto;" alt="ISUZU RUSH">
         <div class="qr-tagline">สแกนเพื่อเริ่มซิ่ง ไม่ต้องติดตั้งแอป!</div>
         <div id="qrCanvasContainer" class="qr-canvas-box"></div>
         <div class="qr-scan-badge">⚡ ขับชิงรางวัลใหญ่ประจำวัน ⚡</div>
@@ -127,7 +512,327 @@
     </div>
   </div>
 
-  <script src="./js/qrcode-lib.js"></script>
+  <script>
+/**
+ * Standalone QRCode Generator for ISUZU RUSH
+ * Pure JavaScript, no external network dependencies.
+ * Generates QR Code matrices and renders to Canvas or SVG.
+ */
+
+(function (root, factory) {
+  if (typeof define === 'function' && define.amd) {
+    define([], factory);
+  } else if (typeof exports === 'object') {
+    module.exports = factory();
+  } else {
+    root.QRCode = factory();
+  }
+}(this, function () {
+
+  // Simple QR Code matrix generator implementation
+  function QR8bitByte(data) {
+    this.mode = 4; // 8-bit byte mode
+    this.data = data;
+  }
+  QR8bitByte.prototype = {
+    getLength: function () { return this.data.length; },
+    write: function (buffer) {
+      for (var i = 0; i < this.data.length; i++) {
+        buffer.put(this.data.charCodeAt(i), 8);
+      }
+    }
+  };
+
+  var QRPolynomial = function (num, shift) {
+    var offset = 0;
+    while (offset < num.length && num[offset] === 0) offset++;
+    this.num = new Array(num.length - offset + shift);
+    for (var i = 0; i < num.length - offset; i++) this.num[i] = num[offset + i];
+  };
+
+  var QRMath = {
+    glog: function (n) {
+      if (n < 1) throw new Error("glog(" + n + ")");
+      return QRMath.LOG_TABLE[n];
+    },
+    gexp: function (n) {
+      while (n < 0) n += 255;
+      while (n >= 255) n -= 255;
+      return QRMath.EXP_TABLE[n];
+    },
+    EXP_TABLE: new Array(256),
+    LOG_TABLE: new Array(256)
+  };
+
+  for (var i = 0; i < 8; i++) QRMath.EXP_TABLE[i] = 1 << i;
+  for (var i = 8; i < 256; i++) QRMath.EXP_TABLE[i] = QRMath.EXP_TABLE[i - 4] ^ QRMath.EXP_TABLE[i - 5] ^ QRMath.EXP_TABLE[i - 6] ^ QRMath.EXP_TABLE[i - 8];
+  for (var i = 0; i < 255; i++) QRMath.LOG_TABLE[QRMath.EXP_TABLE[i]] = i;
+
+  QRPolynomial.prototype = {
+    get: function (index) { return this.num[index]; },
+    getLength: function () { return this.num.length; },
+    multiply: function (e) {
+      var num = new Array(this.getLength() + e.getLength() - 1);
+      for (var i = 0; i < this.getLength(); i++) {
+        for (var j = 0; j < e.getLength(); j++) {
+          num[i + j] ^= QRMath.gexp(QRMath.glog(this.get(i)) + QRMath.glog(e.get(j)));
+        }
+      }
+      return new QRPolynomial(num, 0);
+    },
+    mod: function (e) {
+      if (this.getLength() - e.getLength() < 0) return this;
+      var ratio = QRMath.glog(this.get(0)) - QRMath.glog(e.get(0));
+      var num = new Array(this.getLength());
+      for (var i = 0; i < this.getLength(); i++) num[i] = this.get(i);
+      for (var i = 0; i < e.getLength(); i++) num[i] ^= QRMath.gexp(QRMath.glog(e.get(i)) + ratio);
+      return new QRPolynomial(num, 0).mod(e);
+    }
+  };
+
+  var QRRSBlock = {
+    RS_BLOCK_TABLE: [
+      [1, 26, 19], [1, 26, 16], [1, 26, 13], [1, 26, 9],
+      [1, 44, 34], [1, 44, 28], [1, 44, 22], [1, 44, 16],
+      [1, 70, 55], [1, 70, 44], [2, 35, 17], [2, 35, 13],
+      [1, 100, 80], [2, 50, 32], [2, 50, 24], [4, 25, 9],
+      [1, 134, 108], [2, 67, 43], [2, 33, 15, 2, 34, 16], [2, 33, 11, 2, 34, 12],
+      [2, 86, 68], [4, 43, 27], [4, 43, 19], [4, 43, 15]
+    ],
+    getRSBlocks: function (typeNumber, errorCorrectLevel) {
+      var rsBlock = QRRSBlock.getRsBlockTable(typeNumber, errorCorrectLevel);
+      if (rsBlock == undefined) throw new Error("bad rs block @ typeNumber:" + typeNumber + "/errorCorrectLevel:" + errorCorrectLevel);
+      var length = rsBlock.length / 3;
+      var list = [];
+      for (var i = 0; i < length; i++) {
+        var count = rsBlock[i * 3 + 0];
+        var totalCount = rsBlock[i * 3 + 1];
+        var dataCount = rsBlock[i * 3 + 2];
+        for (var j = 0; j < count; j++) list.push({ totalCount: totalCount, dataCount: dataCount });
+      }
+      return list;
+    },
+    getRsBlockTable: function (typeNumber, errorCorrectLevel) {
+      switch (errorCorrectLevel) {
+        case 1: return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 0];
+        case 0: return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 1];
+        case 3: return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 2];
+        case 2: return QRRSBlock.RS_BLOCK_TABLE[(typeNumber - 1) * 4 + 3];
+        default: return undefined;
+      }
+    }
+  };
+
+  var QRBitBuffer = function () {
+    this.buffer = [];
+    this.length = 0;
+  };
+  QRBitBuffer.prototype = {
+    get: function (index) {
+      var bufIndex = Math.floor(index / 8);
+      return ((this.buffer[bufIndex] >>> (7 - index % 8)) & 1) == 1;
+    },
+    put: function (num, length) {
+      for (var i = 0; i < length; i++) this.putBit(((num >>> (length - i - 1)) & 1) == 1);
+    },
+    putBit: function (bit) {
+      var bufIndex = Math.floor(this.length / 8);
+      if (this.buffer.length <= bufIndex) this.buffer.push(0);
+      if (bit) this.buffer[bufIndex] |= (0x80 >>> (this.length % 8));
+      this.length++;
+    }
+  };
+
+  function QRCodeModel(typeNumber, errorCorrectLevel) {
+    this.typeNumber = typeNumber;
+    this.errorCorrectLevel = errorCorrectLevel;
+    this.modules = null;
+    this.moduleCount = 0;
+    this.dataCache = null;
+    this.dataList = [];
+  }
+
+  QRCodeModel.prototype = {
+    addData: function (data) {
+      var newData = new QR8bitByte(data);
+      this.dataList.push(newData);
+      this.dataCache = null;
+    },
+    isDark: function (row, col) {
+      if (row < 0 || this.moduleCount <= row || col < 0 || this.moduleCount <= col) throw new Error(row + "," + col);
+      return this.modules[row][col];
+    },
+    getModuleCount: function () { return this.moduleCount; },
+    make: function () {
+      this.makeImpl(false, this.getBestMaskPattern());
+    },
+    makeImpl: function (test, maskPattern) {
+      this.moduleCount = this.typeNumber * 4 + 17;
+      this.modules = new Array(this.moduleCount);
+      for (var row = 0; row < this.moduleCount; row++) {
+        this.modules[row] = new Array(this.moduleCount);
+        for (var col = 0; col < this.moduleCount; col++) this.modules[row][col] = null;
+      }
+      this.setupPositionProbePattern(0, 0);
+      this.setupPositionProbePattern(this.moduleCount - 7, 0);
+      this.setupPositionProbePattern(0, this.moduleCount - 7);
+      this.setupTimingPattern();
+      this.setupTypeInfo(test, maskPattern);
+      this.mapData(this.createData(this.typeNumber, this.errorCorrectLevel, this.dataList), maskPattern);
+    },
+    setupPositionProbePattern: function (row, col) {
+      for (var r = -1; r <= 7; r++) {
+        if (row + r <= -1 || this.moduleCount <= row + r) continue;
+        for (var c = -1; c <= 7; c++) {
+          if (col + c <= -1 || this.moduleCount <= col + c) continue;
+          if ((0 <= r && r <= 6 && (c == 0 || c == 6)) || (0 <= c && c <= 6 && (r == 0 || r == 6)) || (2 <= r && r <= 4 && 2 <= c && c <= 4)) {
+            this.modules[row + r][col + c] = true;
+          } else {
+            this.modules[row + r][col + c] = false;
+          }
+        }
+      }
+    },
+    setupTimingPattern: function () {
+      for (var r = 8; r < this.moduleCount - 8; r++) {
+        if (this.modules[r][6] != null) continue;
+        this.modules[r][6] = (r % 2 == 0);
+      }
+      for (var c = 8; c < this.moduleCount - 8; c++) {
+        if (this.modules[6][c] != null) continue;
+        this.modules[6][c] = (c % 2 == 0);
+      }
+    },
+    setupTypeInfo: function (test, maskPattern) {
+      var data = (this.errorCorrectLevel << 3) | maskPattern;
+      var bits = 0x5412; // Formatted type bits
+      for (var i = 0; i < 15; i++) {
+        var mod = (!test && ((bits >> i) & 1) == 1);
+        if (i < 6) this.modules[i][8] = mod;
+        else if (i < 8) this.modules[i + 1][8] = mod;
+        else this.modules[this.moduleCount - 15 + i][8] = mod;
+
+        if (i < 8) this.modules[8][this.moduleCount - i - 1] = mod;
+        else if (i < 9) this.modules[8][15 - i - 1 + 1] = mod;
+        else this.modules[8][15 - i - 1] = mod;
+      }
+      this.modules[this.moduleCount - 8][8] = !test;
+    },
+    mapData: function (data, maskPattern) {
+      var inc = -1;
+      var row = this.moduleCount - 1;
+      var bitIndex = 7;
+      var byteIndex = 0;
+      for (var col = this.moduleCount - 1; col > 0; col -= 2) {
+        if (col == 6) col--;
+        while (true) {
+          for (var c = 0; c < 2; c++) {
+            if (this.modules[row][col - c] == null) {
+              var dark = false;
+              if (byteIndex < data.length) dark = (((data[byteIndex] >>> bitIndex) & 1) == 1);
+              if ((row + (col - c)) % 2 == 0) dark = !dark; // Pattern mask 0
+              this.modules[row][col - c] = dark;
+              bitIndex--;
+              if (bitIndex == -1) { byteIndex++; bitIndex = 7; }
+            }
+          }
+          row += inc;
+          if (row < 0 || this.moduleCount <= row) {
+            row -= inc;
+            inc = -inc;
+            break;
+          }
+        }
+      }
+    },
+    getBestMaskPattern: function () { return 0; },
+    createData: function (typeNumber, errorCorrectLevel, dataList) {
+      var rsBlocks = QRRSBlock.getRSBlocks(typeNumber, errorCorrectLevel);
+      var buffer = new QRBitBuffer();
+      for (var i = 0; i < dataList.length; i++) {
+        var data = dataList[i];
+        buffer.put(data.mode, 4);
+        buffer.put(data.getLength(), 8);
+        data.write(buffer);
+      }
+      var totalDataCount = 0;
+      for (var i = 0; i < rsBlocks.length; i++) totalDataCount += rsBlocks[i].dataCount;
+      if (buffer.length + 4 <= totalDataCount * 8) buffer.put(0, 4);
+      while (buffer.length % 8 != 0) buffer.putBit(false);
+      while (true) {
+        if (buffer.length >= totalDataCount * 8) break;
+        buffer.put(0xec, 8);
+        if (buffer.length >= totalDataCount * 8) break;
+        buffer.put(0x11, 8);
+      }
+      return buffer.buffer;
+    }
+  };
+
+  /**
+   * Main render function
+   * @param {HTMLElement|string} target 
+   * @param {string} text 
+   * @param {Object} options 
+   */
+  function QRCode(target, options) {
+    if (typeof options === 'string') {
+      options = { text: options };
+    }
+    options = options || {};
+    var width = options.width || 256;
+    var height = options.height || 256;
+    var colorDark = options.colorDark || '#000000';
+    var colorLight = options.colorLight || '#ffffff';
+    var text = options.text || '';
+
+    var el = typeof target === 'string' ? document.getElementById(target) : target;
+    if (!el) return;
+
+    var canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    var ctx = canvas.getContext('2d');
+
+    // Dynamic type number selection based on string length
+    var typeNum = 4;
+    if (text.length > 50) typeNum = 6;
+    if (text.length > 80) typeNum = 8;
+    if (text.length > 120) typeNum = 10;
+
+    var model = new QRCodeModel(typeNum, 0); // 0 = L error correction
+    model.addData(text);
+    model.make();
+
+    var count = model.getModuleCount();
+    var tileW = width / count;
+    var tileH = height / count;
+
+    ctx.fillStyle = colorLight;
+    ctx.fillRect(0, 0, width, height);
+    ctx.fillStyle = colorDark;
+
+    for (var r = 0; r < count; r++) {
+      for (var c = 0; c < count; c++) {
+        if (model.isDark(r, c)) {
+          ctx.fillRect(Math.round(c * tileW), Math.round(r * tileH), Math.ceil(tileW), Math.ceil(tileH));
+        }
+      }
+    }
+
+    el.innerHTML = '';
+    el.appendChild(canvas);
+
+    return {
+      canvas: canvas,
+      toDataURL: function () { return canvas.toDataURL('image/png'); }
+    };
+  }
+
+  return QRCode;
+}));
+
+</script>
   <script>
     const basePath = window.location.pathname.replace(/\/[^/]*$/, '/');
     const baseUrl = `${window.location.origin}${basePath}`;
