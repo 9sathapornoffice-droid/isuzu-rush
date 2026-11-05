@@ -39,13 +39,14 @@ document.addEventListener('DOMContentLoaded', () => {
   localStorage.setItem('isuzu_rush_source', detectedSource);
 
   // Central API Configuration (Supports Localhost, Cloud Server, and Offline Mode)
+  const DEFAULT_CLOUD_API = 'https://isuzu-rush-1.onrender.com';
   const queryApi = urlParams.get('api');
   if (queryApi) {
     localStorage.setItem('isuzu_rush_api_url', queryApi);
   }
   const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? ''
-    : (localStorage.getItem('isuzu_rush_api_url') || '');
+    : (localStorage.getItem('isuzu_rush_api_url') || DEFAULT_CLOUD_API);
 
   // Initialize Language
   window.setLanguage(window.getLanguage());
