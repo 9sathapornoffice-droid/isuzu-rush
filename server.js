@@ -334,6 +334,249 @@ function getPlayerRank(playerId, period = 'all') {
 }
 
 // -------------------------------------------------------------
+// 2.1 ADMIN DATABASE METHODS
+// -------------------------------------------------------------
+function checkAdminAuth(req, parsedUrl) {
+  const token = req.headers['x-admin-token'] || parsedUrl.query?.adminToken || parsedUrl.query?.pin || '';
+  if (!token) return false;
+  if (adminSessions.has(token)) return true;
+  if (token === ADMIN_PASSWORD) return true;
+  return false;
+}
+
+function getAdminStats() {
+  if (dbMode === 'sqlite') {
+    const totalPlayers = sqliteDb.prepare('SELECT COUNT(*) AS c FROM players').get().c;
+    const totalPlays = sqliteDb.prepare('SELECT COUNT(*) AS c FROM scores').get().c;
+    const avgPlayTime = sqliteDb.prepare('SELECT AVG(play_time_sec) AS avg FROM scores WHERE play_time_sec > 0').get().avg || 0;
+    const highScoreAll = sqliteDb.prepare('SELECT MAX(score) AS m FROM scores').get().m || 0;
+
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const playsToday = sqliteDb.prepare(`SELECT COUNT(*) AS c FROM scores WHERE created_at >= ?`).get(startOfDay.toISOString()).c;
+
+    const sourceStats = sqliteDb.prepare(`
+      SELECT COALESCE(source, 'direct') as source, COUNT(*) as count 
+      FROM scores 
+      GROUP BY source 
+      ORDER BY count DESC
+    `).all();
+
+    const hourly = sqliteDb.prepare(`
+      SELECT strftime('%Y-%m-%d %H:00', created_at) as hour, COUNT(*) as count
+      FROM scores
+      WHERE created_at >= datetime('now', '-24 hours')
+      GROUP BY hour
+      ORDER BY hour ASC
+    `).all();
+
+    return {
+      totalPlayers,
+      totalPlays,
+      playsToday,
+      avgPlayTimeSeconds: Math.round(avgPlayTime),
+      highScoreAll,
+      sourceStats,
+      hourly
+    };
+  } else {
+    const totalPlayers = jsonDb.players.length;
+    const totalPlays = jsonDb.scores.length;
+    const highScoreAll = jsonDb.scores.reduce((max, s) => Math.max(max, s.score || 0), 0);
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+    const startIso = startOfDay.toISOString();
+    const playsToday = jsonDb.scores.filter(s => s.created_at >= startIso).length;
+    return {
+      totalPlayers,
+      totalPlays,
+      playsToday,
+      avgPlayTimeSeconds: 45,
+      highScoreAll,
+      sourceStats: [{ source: 'direct', count: totalPlays }],
+      hourly: []
+    };
+  }
+}
+
+function getAdminPlayers({ search = '', page = 1, pageSize = 50 } = {}) {
+  const offset = (page - 1) * pageSize;
+  if (dbMode === 'sqlite') {
+    let filter = '';
+    let params = [];
+    if (search) {
+      filter = `WHERE (p.nickname LIKE ? OR p.phone LIKE ? OR p.email LIKE ?)`;
+      const term = `%${search}%`;
+      params = [term, term, term];
+    }
+
+    const countQuery = `SELECT COUNT(*) as c FROM players p ${filter}`;
+    const total = sqliteDb.prepare(countQuery).get(...params).c;
+
+    const dataQuery = `
+      SELECT 
+        p.id,
+        p.player_uuid,
+        p.nickname,
+        p.phone,
+        p.email,
+        p.source,
+        p.is_banned,
+        p.created_at,
+        COALESCE(MAX(s.score), 0) as high_score,
+        COALESCE(MAX(s.distance), 0) as best_distance,
+        COUNT(s.id) as games_played,
+        MAX(s.created_at) as last_played
+      FROM players p
+      LEFT JOIN scores s ON p.id = s.player_id
+      ${filter}
+      GROUP BY p.id
+      ORDER BY high_score DESC, best_distance DESC, p.id ASC
+      LIMIT ? OFFSET ?
+    `;
+
+    const rows = sqliteDb.prepare(dataQuery).all(...params, pageSize, offset);
+    const rankedRows = rows.map((r, idx) => ({
+      ...r,
+      rank: offset + idx + 1
+    }));
+
+    return {
+      players: rankedRows,
+      total,
+      page,
+      totalPages: Math.max(1, Math.ceil(total / pageSize))
+    };
+  } else {
+    let list = jsonDb.players.map(p => {
+      const pScores = jsonDb.scores.filter(s => s.player_id === p.id);
+      const highScore = pScores.reduce((max, s) => Math.max(max, s.score || 0), 0);
+      const bestDistance = pScores.reduce((max, s) => Math.max(max, s.distance || 0), 0);
+      return {
+        id: p.id,
+        player_uuid: p.player_uuid,
+        nickname: p.nickname,
+        phone: p.phone,
+        email: p.email,
+        source: p.source,
+        is_banned: p.is_banned || 0,
+        created_at: p.created_at,
+        high_score: highScore,
+        best_distance: bestDistance,
+        games_played: pScores.length,
+        last_played: pScores[pScores.length - 1]?.created_at || p.created_at
+      };
+    });
+
+    if (search) {
+      const s = search.toLowerCase();
+      list = list.filter(p => 
+        (p.nickname && p.nickname.toLowerCase().includes(s)) ||
+        (p.phone && p.phone.includes(s)) ||
+        (p.email && p.email.toLowerCase().includes(s))
+      );
+    }
+
+    list.sort((a, b) => b.high_score - a.high_score || b.best_distance - a.best_distance);
+    const total = list.length;
+    const paginated = list.slice(offset, offset + pageSize).map((item, idx) => ({
+      ...item,
+      rank: offset + idx + 1
+    }));
+
+    return {
+      players: paginated,
+      total,
+      page,
+      totalPages: Math.max(1, Math.ceil(total / pageSize))
+    };
+  }
+}
+
+function togglePlayerBan(playerId, isBanned) {
+  if (dbMode === 'sqlite') {
+    sqliteDb.prepare('UPDATE players SET is_banned = ? WHERE id = ?').run(isBanned ? 1 : 0, playerId);
+  } else {
+    const p = jsonDb.players.find(x => x.id === playerId);
+    if (p) p.is_banned = isBanned ? 1 : 0;
+    saveJsonDb();
+  }
+}
+
+function deleteScore(scoreId) {
+  if (dbMode === 'sqlite') {
+    sqliteDb.prepare('DELETE FROM scores WHERE id = ?').run(scoreId);
+  } else {
+    jsonDb.scores = jsonDb.scores.filter(s => s.id !== scoreId);
+    saveJsonDb();
+  }
+}
+
+function resetLeaderboard() {
+  if (dbMode === 'sqlite') {
+    sqliteDb.exec('DELETE FROM scores;');
+    sqliteDb.exec('DELETE FROM game_sessions;');
+  } else {
+    jsonDb.scores = [];
+    jsonDb.sessions = [];
+    saveJsonDb();
+  }
+}
+
+function getAllPlayersForExport(topN = null) {
+  let limitClause = '';
+  if (topN && parseInt(topN, 10) > 0) {
+    limitClause = `LIMIT ${parseInt(topN, 10)}`;
+  }
+
+  if (dbMode === 'sqlite') {
+    const query = `
+      SELECT 
+        p.id,
+        p.nickname,
+        p.phone,
+        p.email,
+        p.source,
+        p.is_banned,
+        p.created_at AS registered_at,
+        COALESCE(MAX(s.score), 0) AS high_score,
+        COALESCE(MAX(s.distance), 0) AS best_distance,
+        COUNT(s.id) AS total_games
+      FROM players p
+      LEFT JOIN scores s ON p.id = s.player_id
+      GROUP BY p.id
+      ORDER BY high_score DESC, best_distance DESC
+      ${limitClause}
+    `;
+    return sqliteDb.prepare(query).all();
+  } else {
+    const res = getAdminPlayers({ search: '', page: 1, pageSize: topN ? parseInt(topN, 10) : 10000 });
+    return res.players;
+  }
+}
+
+function getAllSettings() {
+  if (dbMode === 'sqlite') {
+    try {
+      const rows = sqliteDb.prepare('SELECT key, value FROM settings').all();
+      const res = {};
+      for (const r of rows) res[r.key] = r.value;
+      return res;
+    } catch (e) { return {}; }
+  }
+  return jsonDb.settings || {};
+}
+
+function updateSetting(key, value) {
+  if (dbMode === 'sqlite') {
+    sqliteDb.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)').run(key, String(value));
+  } else {
+    jsonDb.settings[key] = String(value);
+    saveJsonDb();
+  }
+}
+
+// -------------------------------------------------------------
 // 3. ANTI-CHEAT
 // -------------------------------------------------------------
 const activeSessions = new Map();
@@ -518,7 +761,14 @@ const server = http.createServer(async (req, res) => {
       });
     }
 
-    // 6. Admin Login & Stats
+    // 6. Settings & Config
+    if (pathname === '/api/settings' && method === 'GET') {
+      const settings = getAllSettings();
+      delete settings.admin_pin;
+      return sendJson(res, 200, { success: true, settings });
+    }
+
+    // 7. Admin Login & Auth Check
     if (pathname === '/api/admin/login' && method === 'POST') {
       const body = await parseBody(req);
       if (body.pin === ADMIN_PASSWORD) {
@@ -526,11 +776,86 @@ const server = http.createServer(async (req, res) => {
         adminSessions.add(token);
         return sendJson(res, 200, { success: true, token });
       }
-      return sendJson(res, 401, { success: false, error: 'รหัสผ่านไม่ถูกต้อง' });
+      return sendJson(res, 401, { success: false, error: 'รหัสผ่านไม่ถูกต้อง (Default: isuzu2026)' });
     }
 
-    // Fallback: Serve static index.html or root
-    const filePath = path.join(__dirname, pathname === '/' ? 'index.html' : pathname);
+    // 8. Admin Stats
+    if (pathname === '/api/admin/stats' && method === 'GET') {
+      if (!checkAdminAuth(req, parsedUrl)) return sendJson(res, 401, { success: false, error: 'Unauthorized' });
+      const stats = getAdminStats();
+      return sendJson(res, 200, { success: true, stats });
+    }
+
+    // 9. Admin Players & Leaderboard inspection
+    if (pathname === '/api/admin/players' && method === 'GET') {
+      if (!checkAdminAuth(req, parsedUrl)) return sendJson(res, 401, { success: false, error: 'Unauthorized' });
+      const search = parsedUrl.query.search || '';
+      const page = parseInt(parsedUrl.query.page, 10) || 1;
+      const result = getAdminPlayers({ search, page, pageSize: 50 });
+      return sendJson(res, 200, { success: true, ...result });
+    }
+
+    // 10. Admin Ban/Unban Player
+    if (pathname === '/api/admin/player/ban' && method === 'POST') {
+      if (!checkAdminAuth(req, parsedUrl)) return sendJson(res, 401, { success: false, error: 'Unauthorized' });
+      const body = await parseBody(req);
+      togglePlayerBan(body.playerId, body.isBanned);
+      return sendJson(res, 200, { success: true });
+    }
+
+    // 11. Admin Delete Score
+    if (pathname.startsWith('/api/admin/score/') && method === 'DELETE') {
+      if (!checkAdminAuth(req, parsedUrl)) return sendJson(res, 401, { success: false, error: 'Unauthorized' });
+      const scoreId = parseInt(pathname.split('/').pop(), 10);
+      deleteScore(scoreId);
+      return sendJson(res, 200, { success: true });
+    }
+
+    // 12. Admin Reset Leaderboard
+    if (pathname === '/api/admin/reset-leaderboard' && method === 'POST') {
+      if (!checkAdminAuth(req, parsedUrl)) return sendJson(res, 401, { success: false, error: 'Unauthorized' });
+      resetLeaderboard();
+      return sendJson(res, 200, { success: true, message: 'Leaderboard reset complete' });
+    }
+
+    // 13. Admin Update Settings
+    if (pathname === '/api/admin/settings' && method === 'POST') {
+      if (!checkAdminAuth(req, parsedUrl)) return sendJson(res, 401, { success: false, error: 'Unauthorized' });
+      const body = await parseBody(req);
+      for (const [k, v] of Object.entries(body.settings || {})) {
+        updateSetting(k, v);
+      }
+      return sendJson(res, 200, { success: true });
+    }
+
+    // 14. Admin Export CSV
+    if (pathname === '/api/admin/export-csv' && method === 'GET') {
+      if (!checkAdminAuth(req, parsedUrl)) return sendJson(res, 401, { success: false, error: 'Unauthorized' });
+      const topN = parsedUrl.query.topN || null;
+      const rows = getAllPlayersForExport(topN);
+
+      let csv = '\uFEFF'; // UTF-8 BOM for Thai Excel
+      csv += 'อันดับ,ID,ชื่อเล่น,เบอร์โทรศัพท์,อีเมล,คะแนนสูงสุด,ระยะทาง (ม.),เล่นสะสม,ช่องทาง,สถานะแบน,วันที่ลงทะเบียน\n';
+      rows.forEach((r, idx) => {
+        csv += `"${idx + 1}","${r.id}","${(r.nickname || '').replace(/"/g, '""')}","${r.phone || ''}","${r.email || ''}","${r.high_score}","${r.best_distance}","${r.total_games || r.games_played || 0}","${r.source || 'direct'}","${r.is_banned ? 'BANNED' : 'ACTIVE'}","${r.registered_at || r.created_at || ''}"\n`;
+      });
+
+      res.writeHead(200, {
+        'Content-Type': 'text/csv; charset=utf-8',
+        'Content-Disposition': `attachment; filename="isuzu_rush_leaderboard_${Date.now()}.csv"`,
+        'Access-Control-Allow-Origin': '*'
+      });
+      return res.end(csv);
+    }
+
+    // Friendly URL routing
+    let routePath = pathname;
+    if (routePath === '/' || routePath === '') routePath = 'index.html';
+    else if (routePath === '/admin' || routePath === '/admin/') routePath = 'admin.html';
+    else if (routePath === '/qr' || routePath === '/qr/') routePath = 'qr.html';
+    else if (routePath.startsWith('/')) routePath = routePath.slice(1);
+
+    const filePath = path.join(__dirname, routePath);
     if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
       const ext = path.extname(filePath).toLowerCase();
       const contentTypes = {
@@ -539,7 +864,8 @@ const server = http.createServer(async (req, res) => {
         '.js': 'application/javascript; charset=utf-8',
         '.png': 'image/png',
         '.jpg': 'image/jpeg',
-        '.svg': 'image/svg+xml'
+        '.svg': 'image/svg+xml',
+        '.csv': 'text/csv; charset=utf-8'
       };
       res.writeHead(200, {
         'Content-Type': contentTypes[ext] || 'application/octet-stream',

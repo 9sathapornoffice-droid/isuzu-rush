@@ -4,14 +4,399 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ISUZU RUSH - Admin Dashboard & จัดการกิจกรรม</title>
-  <link rel="stylesheet" href="./css/admin.css">
+  <style>
+/* ==========================================================================
+   ISUZU RUSH - Organizer Admin Dashboard Styling
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --admin-bg: #0D0E12;
+  --admin-card: #181920;
+  --admin-border: #282A36;
+  --admin-text: #F8F9FA;
+  --admin-muted: #8F95A3;
+  --brand-red: #E60012;
+  --brand-blue: #0088FF;
+  --brand-green: #00D26A;
+  --brand-gold: #FFC107;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Kanit', sans-serif;
+}
+
+body {
+  background-color: var(--admin-bg);
+  color: var(--admin-text);
+  min-height: 100vh;
+}
+
+/* Login Overlay */
+.admin-login-overlay {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at center, #24090B 0%, #0D0E12 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.login-card {
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
+  border-radius: 20px;
+  padding: 36px 32px;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
+}
+
+.login-card h2 {
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.login-card p {
+  color: var(--admin-muted);
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+.login-input {
+  width: 100%;
+  padding: 14px 16px;
+  background: #101116;
+  border: 1.5px solid var(--admin-border);
+  border-radius: 12px;
+  color: #FFF;
+  font-size: 18px;
+  text-align: center;
+  letter-spacing: 4px;
+  outline: none;
+  margin-bottom: 12px;
+}
+
+.login-input:focus {
+  border-color: var(--brand-red);
+}
+
+.btn-admin {
+  background: var(--brand-red);
+  color: #FFF;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  transition: opacity 0.2s;
+}
+
+.btn-admin:hover {
+  opacity: 0.9;
+}
+
+/* Dashboard Header */
+.dashboard-header {
+  background: var(--admin-card);
+  border-bottom: 1px solid var(--admin-border);
+  padding: 16px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-brand img {
+  height: 38px;
+}
+
+.header-badge {
+  background: rgba(230, 0, 18, 0.15);
+  border: 1px solid var(--brand-red);
+  color: var(--brand-red);
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--admin-border);
+  color: var(--admin-text);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* Dashboard Container */
+.dashboard-container {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 28px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* Metrics Row */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.metric-card {
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.metric-title {
+  font-size: 13px;
+  color: var(--admin-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.metric-value {
+  font-size: 32px;
+  font-weight: 800;
+  color: #FFF;
+}
+
+/* Sections */
+.admin-section {
+  background: var(--admin-card);
+  border: 1px solid var(--admin-border);
+  border-radius: 20px;
+  padding: 24px;
+}
+
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* Hourly Chart */
+.chart-flex {
+  display: flex;
+  align-items: flex-end;
+  height: 180px;
+  gap: 8px;
+  padding: 10px 0;
+  overflow-x: auto;
+}
+
+.chart-bar-col {
+  flex: 1;
+  min-width: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.chart-bar-value {
+  font-size: 11px;
+  color: var(--admin-muted);
+  margin-bottom: 4px;
+}
+
+.chart-bar-fill {
+  width: 100%;
+  background: linear-gradient(180deg, var(--brand-red) 0%, #8A000B 100%);
+  border-radius: 4px 4px 0 0;
+  min-height: 6px;
+}
+
+.chart-bar-label {
+  font-size: 10px;
+  color: var(--admin-muted);
+  margin-top: 6px;
+}
+
+/* Source Badges */
+.source-stats-list {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.source-badge {
+  background: #111218;
+  border: 1px solid var(--admin-border);
+  border-radius: 10px;
+  padding: 8px 14px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.source-name {
+  font-weight: 600;
+  color: #FFF;
+}
+
+.source-count {
+  background: var(--brand-red);
+  color: #FFF;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+/* Table */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 14px;
+}
+
+.admin-table th {
+  background: #12131A;
+  padding: 12px 16px;
+  color: var(--admin-muted);
+  font-weight: 600;
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.admin-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--admin-border);
+  vertical-align: middle;
+}
+
+.row-banned td {
+  opacity: 0.45;
+  text-decoration: line-through;
+}
+
+.score-badge {
+  font-weight: 700;
+  color: var(--brand-gold);
+}
+
+.tag-source {
+  background: #252834;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.btn-action {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-ban {
+  background: rgba(230, 0, 18, 0.2);
+  color: #FF5252;
+  border: 1px solid #FF5252;
+}
+
+.btn-unban {
+  background: rgba(0, 210, 106, 0.2);
+  color: #00D26A;
+  border: 1px solid #00D26A;
+}
+
+/* Pagination & Filter */
+.table-toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.search-input {
+  background: #111218;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  padding: 8px 14px;
+  color: #FFF;
+  font-size: 14px;
+  outline: none;
+}
+
+/* Config Grid */
+.config-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.config-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.config-group label {
+  font-size: 13px;
+  color: var(--admin-muted);
+}
+
+.config-input, .config-select {
+  background: #111218;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: #FFF;
+  font-size: 14px;
+}
+
+</style>
 </head>
 <body>
 
   <!-- 1. LOGIN OVERLAY (PIN REQUIRED) -->
   <div id="adminLoginOverlay" class="admin-login-overlay">
     <div class="login-card">
-      <img src="./assets/images/logo.svg" style="width:200px; margin-bottom:16px;" alt="ISUZU RUSH">
+      <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMjAgMTAwIiB3aWR0aD0iMzIwIiBoZWlnaHQ9IjEwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9InRleHRHcmFkIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI0ZGRkZGRiIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iI0Y1RjVGNSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNFMEUwRTAiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9InJ1c2hHcmFkIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNGRjNEMDAiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSI1MCUiIHN0b3AtY29sb3I9IiNFNjAwMTIiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjQjcxQzFDIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGZpbHRlciBpZD0ic2hhZG93IiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTMwJSIgaGVpZ2h0PSIxMzAlIj4KICAgICAgPGZlRHJvcFNoYWRvdyBkeD0iMyIgZHk9IjQiIHN0ZERldmlhdGlvbj0iMyIgZmxvb2QtY29sb3I9IiMwMDAwMDAiIGZsb29kLW9wYWNpdHk9IjAuOCIvPgogICAgPC9maWx0ZXI+CiAgPC9kZWZzPgoKICA8IS0tIER5bmFtaWMgc2xhbnRlZCByYWNpbmcgYmFkZ2UgYmFja2dyb3VuZCAtLT4KICA8cG9seWdvbiBwb2ludHM9IjE1LDEwIDMxNSwxMCAyOTUsOTAgNSw5MCIgZmlsbD0iIzE1MTUxNSIgc3Ryb2tlPSIjRTYwMDEyIiBzdHJva2Utd2lkdGg9IjMiIGZpbHRlcj0idXJsKCNzaGFkb3cpIi8+CiAgCiAgPCEtLSBTcGVlZCBsaW5lcyBpbiBiYWNrZ3JvdW5kIC0tPgogIDxsaW5lIHgxPSIzMCIgeTE9IjIwIiB4Mj0iMTIwIiB5Mj0iMjAiIHN0cm9rZT0iI0U2MDAxMiIgc3Ryb2tlLXdpZHRoPSIyIiBvcGFjaXR5PSIwLjYiLz4KICA8bGluZSB4MT0iMjAiIHkxPSIyNiIgeDI9IjgwIiB5Mj0iMjYiIHN0cm9rZT0iI0U2MDAxMiIgc3Ryb2tlLXdpZHRoPSIzIiBvcGFjaXR5PSIwLjQiLz4KICA8bGluZSB4MT0iMjIwIiB5MT0iNzQiIHgyPSIyOTAiIHkyPSI3NCIgc3Ryb2tlPSIjRkZGIiBzdHJva2Utd2lkdGg9IjIiIG9wYWNpdHk9IjAuMyIvPgoKICA8IS0tIEJyYW5kIFR5cG9ncmFwaHkgLS0+CiAgPGcgdHJhbnNmb3JtPSJza2V3WCgtMTQpIj4KICAgIDx0ZXh0IHg9IjUwIiB5PSI0OCIgZm9udC1mYW1pbHk9IidLYW5pdCcsICdBcmlhbCBCbGFjaycsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI5MDAiIGZvbnQtc2l6ZT0iMzQiIGZpbGw9InVybCgjdGV4dEdyYWQpIiBsZXR0ZXItc3BhY2luZz0iNCI+SVNVWlU8L3RleHQ+CiAgICA8dGV4dCB4PSIxNzUiIHk9Ijc2IiBmb250LWZhbWlseT0iJ0thbml0JywgJ0FyaWFsIEJsYWNrJywgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjkwMCIgZm9udC1zaXplPSI0NCIgZmlsbD0idXJsKCNydXNoR3JhZCkiIGZvbnQtc3R5bGU9Iml0YWxpYyIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjEuMiIgbGV0dGVyLXNwYWNpbmc9IjIiPlJVU0g8L3RleHQ+CiAgPC9nPgoKICA8IS0tIEFjY2VudCBzdGFyIGJhZGdlIC0tPgogIDxwb2x5Z29uIHBvaW50cz0iMjkwLDIwIDI5MywyNyAzMDEsMjcgMjk1LDMyIDI5NywzOSAyOTAsMzQgMjgzLDM5IDI4NSwzMiAyNzksMjcgMjg3LDI3IiBmaWxsPSIjRkZENzAwIi8+Cjwvc3ZnPgo=" style="width:200px; margin-bottom:16px;" alt="ISUZU RUSH">
       <h2>ผู้ดูแลระบบกิจกรรม</h2>
       <p>กรุณาระบุรหัส PIN เพื่อเข้าสู่แผงควบคุม (เริ่มต้น: isuzu2026)</p>
       <form id="adminLoginForm">
@@ -27,7 +412,7 @@
     <!-- Header -->
     <header class="dashboard-header">
       <div class="header-brand">
-        <img src="./assets/images/logo.svg" alt="ISUZU RUSH">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMjAgMTAwIiB3aWR0aD0iMzIwIiBoZWlnaHQ9IjEwMCI+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9InRleHRHcmFkIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI0ZGRkZGRiIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjUwJSIgc3RvcC1jb2xvcj0iI0Y1RjVGNSIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiNFMEUwRTAiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9InJ1c2hHcmFkIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIwJSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiNGRjNEMDAiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSI1MCUiIHN0b3AtY29sb3I9IiNFNjAwMTIiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjQjcxQzFDIi8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogICAgPGZpbHRlciBpZD0ic2hhZG93IiB4PSItMTAlIiB5PSItMTAlIiB3aWR0aD0iMTMwJSIgaGVpZ2h0PSIxMzAlIj4KICAgICAgPGZlRHJvcFNoYWRvdyBkeD0iMyIgZHk9IjQiIHN0ZERldmlhdGlvbj0iMyIgZmxvb2QtY29sb3I9IiMwMDAwMDAiIGZsb29kLW9wYWNpdHk9IjAuOCIvPgogICAgPC9maWx0ZXI+CiAgPC9kZWZzPgoKICA8IS0tIER5bmFtaWMgc2xhbnRlZCByYWNpbmcgYmFkZ2UgYmFja2dyb3VuZCAtLT4KICA8cG9seWdvbiBwb2ludHM9IjE1LDEwIDMxNSwxMCAyOTUsOTAgNSw5MCIgZmlsbD0iIzE1MTUxNSIgc3Ryb2tlPSIjRTYwMDEyIiBzdHJva2Utd2lkdGg9IjMiIGZpbHRlcj0idXJsKCNzaGFkb3cpIi8+CiAgCiAgPCEtLSBTcGVlZCBsaW5lcyBpbiBiYWNrZ3JvdW5kIC0tPgogIDxsaW5lIHgxPSIzMCIgeTE9IjIwIiB4Mj0iMTIwIiB5Mj0iMjAiIHN0cm9rZT0iI0U2MDAxMiIgc3Ryb2tlLXdpZHRoPSIyIiBvcGFjaXR5PSIwLjYiLz4KICA8bGluZSB4MT0iMjAiIHkxPSIyNiIgeDI9IjgwIiB5Mj0iMjYiIHN0cm9rZT0iI0U2MDAxMiIgc3Ryb2tlLXdpZHRoPSIzIiBvcGFjaXR5PSIwLjQiLz4KICA8bGluZSB4MT0iMjIwIiB5MT0iNzQiIHgyPSIyOTAiIHkyPSI3NCIgc3Ryb2tlPSIjRkZGIiBzdHJva2Utd2lkdGg9IjIiIG9wYWNpdHk9IjAuMyIvPgoKICA8IS0tIEJyYW5kIFR5cG9ncmFwaHkgLS0+CiAgPGcgdHJhbnNmb3JtPSJza2V3WCgtMTQpIj4KICAgIDx0ZXh0IHg9IjUwIiB5PSI0OCIgZm9udC1mYW1pbHk9IidLYW5pdCcsICdBcmlhbCBCbGFjaycsIHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI5MDAiIGZvbnQtc2l6ZT0iMzQiIGZpbGw9InVybCgjdGV4dEdyYWQpIiBsZXR0ZXItc3BhY2luZz0iNCI+SVNVWlU8L3RleHQ+CiAgICA8dGV4dCB4PSIxNzUiIHk9Ijc2IiBmb250LWZhbWlseT0iJ0thbml0JywgJ0FyaWFsIEJsYWNrJywgc2Fucy1zZXJpZiIgZm9udC13ZWlnaHQ9IjkwMCIgZm9udC1zaXplPSI0NCIgZmlsbD0idXJsKCNydXNoR3JhZCkiIGZvbnQtc3R5bGU9Iml0YWxpYyIgc3Ryb2tlPSIjRkZGRkZGIiBzdHJva2Utd2lkdGg9IjEuMiIgbGV0dGVyLXNwYWNpbmc9IjIiPlJVU0g8L3RleHQ+CiAgPC9nPgoKICA8IS0tIEFjY2VudCBzdGFyIGJhZGdlIC0tPgogIDxwb2x5Z29uIHBvaW50cz0iMjkwLDIwIDI5MywyNyAzMDEsMjcgMjk1LDMyIDI5NywzOSAyOTAsMzQgMjgzLDM5IDI4NSwzMiAyNzksMjcgMjg3LDI3IiBmaWxsPSIjRkZENzAwIi8+Cjwvc3ZnPgo=" alt="ISUZU RUSH">
         <span class="header-badge">EVENT ADMIN</span>
       </div>
       <div class="header-actions">
@@ -97,14 +482,16 @@
           <table class="admin-table">
             <thead>
               <tr>
-                <th>ID</th>
+                <th style="width:90px; text-align:center;">อันดับ</th>
                 <th>ชื่อเล่น</th>
-                <th>เบอร์โทร</th>
-                <th>คะแนนสูงสุด</th>
-                <th>ระยะทาง</th>
-                <th>เล่นสะสม</th>
-                <th>ช่องทาง</th>
-                <th>การจัดการ</th>
+                <th>เบอร์โทรศัพท์</th>
+                <th>อีเมล</th>
+                <th style="text-align:right;">คะแนนสูงสุด</th>
+                <th style="text-align:right;">ระยะทาง</th>
+                <th style="text-align:center;">รอบเล่น</th>
+                <th>เล่นล่าสุด</th>
+                <th style="text-align:center;">ช่องทาง</th>
+                <th style="text-align:center;">การจัดการ</th>
               </tr>
             </thead>
             <tbody id="adminPlayersTableBody">
@@ -200,6 +587,318 @@
     </main>
   </div>
 
-  <script src="./js/admin.js"></script>
+  <script>
+/**
+ * Admin Dashboard Controller for ISUZU RUSH
+ * Handles PIN authentication, live statistics, player moderation, CSV exports, and game configurations.
+ */
+
+document.addEventListener('DOMContentLoaded', () => {
+  const DEFAULT_CLOUD_API = 'https://isuzu-rush-1.onrender.com';
+  const urlParams = new URLSearchParams(window.location.search);
+  const customApi = urlParams.get('api') || localStorage.getItem('isuzu_rush_api_url');
+  let API_BASE = DEFAULT_CLOUD_API;
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.includes('onrender.com')) {
+    API_BASE = '';
+  } else if (customApi) {
+    API_BASE = customApi;
+  }
+
+  let adminToken = sessionStorage.getItem('isuzu_admin_token') || '';
+  let currentPage = 1;
+  let currentSearch = '';
+
+  const loginOverlay = document.getElementById('adminLoginOverlay');
+  const mainContent = document.getElementById('adminMainContent');
+  const loginForm = document.getElementById('adminLoginForm');
+  const loginError = document.getElementById('adminLoginError');
+
+  // Check initial login state
+  if (adminToken) {
+    showDashboard();
+  } else {
+    showLogin();
+  }
+
+  function showLogin() {
+    loginOverlay.style.display = 'flex';
+    mainContent.style.display = 'none';
+  }
+
+  function showDashboard() {
+    loginOverlay.style.display = 'none';
+    mainContent.style.display = 'block';
+    loadStats();
+    loadPlayers();
+    loadSettings();
+  }
+
+  // --- LOGIN ---
+  loginForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    loginError.textContent = '';
+    const pin = document.getElementById('adminPinInput').value.trim();
+
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin })
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        loginError.textContent = data.error || 'รหัส PIN ไม่ถูกต้อง (ค่าเริ่มต้น: isuzu2026)';
+        return;
+      }
+
+      adminToken = data.token;
+      sessionStorage.setItem('isuzu_admin_token', adminToken);
+      showDashboard();
+    } catch (err) {
+      loginError.textContent = 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้';
+    }
+  });
+
+  document.getElementById('btnAdminLogout')?.addEventListener('click', () => {
+    sessionStorage.removeItem('isuzu_admin_token');
+    adminToken = '';
+    showLogin();
+  });
+
+  // --- STATS & HOURLY CHART ---
+  async function loadStats() {
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/stats`, {
+        headers: { 'X-Admin-Token': adminToken }
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        if (res.status === 401) showLogin();
+        return;
+      }
+
+      const s = data.stats;
+      document.getElementById('statTotalPlayers').textContent = (s.totalPlayers || 0).toLocaleString();
+      document.getElementById('statTotalPlays').textContent = (s.totalPlays || 0).toLocaleString();
+      document.getElementById('statPlaysToday').textContent = (s.playsToday || 0).toLocaleString();
+      document.getElementById('statAvgTime').textContent = `${s.avgPlayTimeSeconds || 0}s`;
+
+      renderHourlyChart(s.hourly);
+      renderSourceStats(s.sourceStats);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  function renderHourlyChart(hourlyData) {
+    const container = document.getElementById('hourlyChartContainer');
+    if (!hourlyData || hourlyData.length === 0) {
+      container.innerHTML = '<div style="color:#888; text-align:center; padding:30px;">ไม่มีข้อมูลการเล่นใน 24 ชม. ที่ผ่านมา</div>';
+      return;
+    }
+
+    const maxCount = Math.max(...hourlyData.map(d => d.count), 1);
+    const barsHtml = hourlyData.map(d => {
+      const pct = (d.count / maxCount) * 100;
+      const hourLabel = d.hour.slice(-5);
+      return `
+        <div class="chart-bar-col" title="${d.hour}: ${d.count} ครั้ง">
+          <div class="chart-bar-value">${d.count}</div>
+          <div class="chart-bar-fill" style="height: ${Math.max(6, pct)}%;"></div>
+          <div class="chart-bar-label">${hourLabel}</div>
+        </div>
+      `;
+    }).join('');
+
+    container.innerHTML = `<div class="chart-flex">${barsHtml}</div>`;
+  }
+
+  function renderSourceStats(sourceStats) {
+    const container = document.getElementById('sourceStatsContainer');
+    if (!sourceStats || sourceStats.length === 0) {
+      container.innerHTML = '<div style="color:#888; text-align:center; padding:20px;">ไม่มีข้อมูลแหล่งที่มา</div>';
+      return;
+    }
+
+    container.innerHTML = sourceStats.map(s => `
+      <div class="source-badge">
+        <span class="source-name">${s.source || 'direct'}</span>
+        <span class="source-count">${s.count} ครั้ง</span>
+      </div>
+    `).join('');
+  }
+
+  // --- PLAYERS LIST & MODERATION ---
+  async function loadPlayers(page = 1, search = currentSearch) {
+    currentPage = page;
+    currentSearch = search;
+    const tbody = document.getElementById('adminPlayersTableBody');
+
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/players?page=${page}&search=${encodeURIComponent(search)}`, {
+        headers: { 'X-Admin-Token': adminToken }
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) return;
+
+      if (!data.players || data.players.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; color:#888; padding:30px;">ไม่พบข้อมูลผู้เล่นที่ตรงกับเงื่อนไข</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = data.players.map(p => {
+        const medal = p.rank === 1 ? '🥇 อันดับ 1' : p.rank === 2 ? '🥈 อันดับ 2' : p.rank === 3 ? '🥉 อันดับ 3' : `#${p.rank}`;
+        const lastPlayText = p.last_played 
+          ? new Date(p.last_played).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' }) 
+          : (p.created_at ? new Date(p.created_at).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' }) : '-');
+        return `
+        <tr class="${p.is_banned ? 'row-banned' : ''}">
+          <td style="text-align:center;"><strong style="font-size:14px; color:${p.rank <= 3 ? '#FFD700' : '#FFF'}">${medal}</strong></td>
+          <td><strong>${escapeHtml(p.nickname)}</strong></td>
+          <td>${p.phone ? `<a href="tel:${escapeHtml(p.phone)}" style="color:#00D26A; text-decoration:none; font-weight:600;">📞 ${escapeHtml(p.phone)}</a>` : '<span style="color:#666;">-</span>'}</td>
+          <td>${p.email ? `<span style="color:#8F95A3;">${escapeHtml(p.email)}</span>` : '<span style="color:#666;">-</span>'}</td>
+          <td style="text-align:right;"><span class="score-badge">${(p.high_score || 0).toLocaleString()}</span></td>
+          <td style="text-align:right;">${p.best_distance ? p.best_distance.toLocaleString() + ' ม.' : '-'}</td>
+          <td style="text-align:center;">${p.games_played || 0}</td>
+          <td style="font-size:12px; color:#8F95A3;">${lastPlayText}</td>
+          <td style="text-align:center;"><span class="tag-source">${escapeHtml(p.source || 'direct')}</span></td>
+          <td style="text-align:center;">
+            <button class="btn-action ${p.is_banned ? 'btn-unban' : 'btn-ban'}" onclick="toggleBan(${p.id}, ${p.is_banned ? 0 : 1})">
+              ${p.is_banned ? 'ปลดแบน' : 'แบน'}
+            </button>
+          </td>
+        </tr>
+      `}).join('');
+
+      document.getElementById('adminPageInfo').textContent = `หน้า ${data.page} จาก ${data.totalPages || 1} (รวมทั้งหมด ${data.total || 0} คน)`;
+      document.getElementById('btnPrevPage').disabled = data.page <= 1;
+      document.getElementById('btnNextPage').disabled = data.page >= data.totalPages;
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  window.toggleBan = async function (playerId, shouldBan) {
+    if (!confirm(`คุณต้องการ ${shouldBan ? 'แบน' : 'ปลดแบน'} ผู้เล่น ID #${playerId} ใช่หรือไม่?`)) return;
+
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/player/ban`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Admin-Token': adminToken
+        },
+        body: JSON.stringify({ playerId, isBanned: shouldBan === 1 })
+      });
+      if (res.ok) {
+        loadPlayers(currentPage, currentSearch);
+      }
+    } catch (e) {
+      alert('เกิดข้อผิดพลาดในการอัปเดตสถานะ');
+    }
+  };
+
+  let searchTimeout = null;
+  document.getElementById('adminSearchInput')?.addEventListener('input', (e) => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      loadPlayers(1, e.target.value.trim());
+    }, 250);
+  });
+
+  document.getElementById('btnPrevPage')?.addEventListener('click', () => {
+    if (currentPage > 1) loadPlayers(currentPage - 1, currentSearch);
+  });
+
+  document.getElementById('btnNextPage')?.addEventListener('click', () => {
+    loadPlayers(currentPage + 1, currentSearch);
+  });
+
+  // --- CSV EXPORT ---
+  document.getElementById('btnExportTop50')?.addEventListener('click', () => {
+    window.location.href = `${API_BASE}/api/admin/export-csv?topN=50&adminToken=${encodeURIComponent(adminToken)}`;
+  });
+
+  document.getElementById('btnExportAll')?.addEventListener('click', () => {
+    window.location.href = `${API_BASE}/api/admin/export-csv?adminToken=${encodeURIComponent(adminToken)}`;
+  });
+
+  // --- GAME CONFIG SETTINGS ---
+  async function loadSettings() {
+    try {
+      const res = await fetch(`${API_BASE}/api/settings`);
+      const data = await res.json();
+      if (!res.ok || !data.success) return;
+
+      const s = data.settings;
+      if (document.getElementById('cfgEventTitle')) document.getElementById('cfgEventTitle').value = s.event_title || '';
+      if (document.getElementById('cfgEventActive')) document.getElementById('cfgEventActive').value = s.event_active || 'true';
+      if (document.getElementById('cfgDifficulty')) document.getElementById('cfgDifficulty').value = s.difficulty || 'normal';
+      if (document.getElementById('cfgLives')) document.getElementById('cfgLives').value = s.player_lives || '3';
+      if (document.getElementById('cfgBaseSpeed')) document.getElementById('cfgBaseSpeed').value = s.base_speed || '6';
+      if (document.getElementById('cfgRequirePhone')) document.getElementById('cfgRequirePhone').value = s.require_phone || 'false';
+      if (document.getElementById('cfgAnnouncement')) document.getElementById('cfgAnnouncement').value = s.announcement || '';
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  document.getElementById('adminConfigForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const settings = {
+      event_title: document.getElementById('cfgEventTitle').value,
+      event_active: document.getElementById('cfgEventActive').value,
+      difficulty: document.getElementById('cfgDifficulty')?.value || 'normal',
+      player_lives: document.getElementById('cfgLives').value,
+      base_speed: document.getElementById('cfgBaseSpeed').value,
+      require_phone: document.getElementById('cfgRequirePhone').value,
+      announcement: document.getElementById('cfgAnnouncement').value
+    };
+
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/settings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Admin-Token': adminToken
+        },
+        body: JSON.stringify({ settings })
+      });
+      if (res.ok) {
+        alert('บันทึกการตั้งค่าเรียบร้อยแล้ว!');
+      }
+    } catch (e) {
+      alert('บันทึกการตั้งค่าล้มเหลว');
+    }
+  });
+
+  // --- RESET LEADERBOARD ---
+  document.getElementById('btnResetLeaderboard')?.addEventListener('click', async () => {
+    const code = prompt('คำเตือน: การล้าง Leaderboard จะลบสถิติคะแนนทั้งหมดอย่างถาวร!\n\nพิมพ์คำว่า "RESET" เพื่อยืนยัน:');
+    if (code !== 'RESET') return;
+
+    try {
+      const res = await fetch(`${API_BASE}/api/admin/reset-leaderboard`, {
+        method: 'POST',
+        headers: { 'X-Admin-Token': adminToken }
+      });
+      if (res.ok) {
+        alert('ล้างตารางอันดับเรียบร้อยแล้ว');
+        loadStats();
+        loadPlayers();
+      }
+    } catch (e) {
+      alert('Reset failed');
+    }
+  });
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+  }
+});
+
+</script>
 </body>
 </html>
