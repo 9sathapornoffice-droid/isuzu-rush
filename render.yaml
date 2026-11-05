@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: isuzu-rush
+    runtime: node
+    plan: free
+    buildCommand: ""
+    startCommand: node server/server.js
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: NODE_ENV
+        value: production
+      - key: ADMIN_PASSWORD
+        generateValue: true
