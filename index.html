@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>ISUZU RUSH - วิ่งกับ ISUZU Trusted Buddy (TSH)</title>
+
+  <!-- Open Graph Meta Tags for Facebook & LINE link sharing -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="ISUZU RUSH - ตะลุยความเร็วกับ ISUZU Trusted Buddy (TSH)">
+  <meta property="og:description" content="ร่วมสนุกวิ่งเก็บแครอทและตั๋ว VIP ชิงรางวัลใหญ่ในเกม ISUZU RUSH แข่งขันติด Top 50 ลุ้นรับของรางวัลสุดพิเศษ!">
+  <meta property="og:image" content="./assets/brand/isuzu_logo.svg">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="mobile-frame">
+
+      <!-- File Protocol Warning Banner (Shows only if opened via file:///) -->
+      <div id="fileProtocolBanner" style="display:none; background:#DD0000; color:#FFF; font-size:12px; padding:6px 12px; text-align:center; z-index:9999; line-height:1.4;">
+        ⚠️ กำลังเปิดแบบ Local File (ออฟไลน์) เพื่อเชื่อมต่อเซิร์ฟเวอร์และบันทึกคะแนน ให้เปิดผ่าน: 
+        <a href="http://localhost:3000/" style="color:#FFF; font-weight:bold; text-decoration:underline;">http://localhost:3000/</a>
+      </div>
+
+      <!-- 1. SPLASH SCREEN -->
+      <section id="screen-splash" class="screen active">
+        <div class="top-bar-controls">
+          <button id="btnSoundToggle" class="btn-icon-pill">
+            🔊 <span data-i18n="soundOn">เปิดเสียง</span>
+          </button>
+          <button id="btnLangToggle" class="btn-icon-pill">EN</button>
+        </div>
+
+        <div class="splash-hero">
+          <!-- Campaign Banner Card with Hero Glow -->
+          <div class="splash-campaign-card">
+            <img src="./assets/brand/campaign_banner.jpg" alt="ISUZU 2.2 MAXFORCE Biturbo" class="splash-campaign-img">
+            <div class="splash-campaign-overlay">
+              <span class="campaign-pill">NEW 2.2 MAXFORCE</span>
+            </div>
+          </div>
+
+          <div class="splash-title-group">
+            <img src="./assets/brand/biturbo_logo.png" alt="ISUZU 2.2 Ddi MAXFORCE Biturbo" class="splash-biturbo-logo">
+            <img src="./assets/brand/biturbo_slogan.png" alt="โบเทอร์โบ แรง...หยุดโลก" class="splash-slogan-img">
+          </div>
+
+          <div style="display:flex; align-items:center; gap:8px;">
+            <img src="./assets/characters/rabbit_idle.svg" alt="Mascot" style="width:34px; height:auto;">
+            <span class="mascot-badge-tag">ISUZU Trusted Buddy (TSH)</span>
+          </div>
+        </div>
+
+        <div class="splash-buttons">
+          <button id="btnStartGame" class="btn-primary" data-i18n="btnStart">
+            🚀 เริ่มวิ่งเลย!
+          </button>
+          <button id="btnOpenLeaderboard" class="btn-secondary" data-i18n="btnLeaderboard">
+            🏆 ตารางอันดับ
+          </button>
+          <button id="btnOpenTutorial" class="btn-secondary" data-i18n="btnHowToPlay">
+            📖 วิธีเล่น
+          </button>
+        </div>
+      </section>
+
+      <!-- 2. REGISTRATION SCREEN -->
+      <section id="screen-register" class="screen">
+        <h2 style="font-size:22px; text-align:center; color:#FFF;" data-i18n="regTitle">ลงทะเบียนร่วมสนุก</h2>
+        <p style="font-size:13px; text-align:center; color:var(--brand-text-muted); margin-top:4px;" data-i18n="regSubtitle">
+          กรอกข้อมูลเพื่อบันทึกสถิติและลุ้นรับของรางวัลพิเศษกับ ISUZU Trusted Buddy
+        </p>
+
+        <form id="regForm" class="reg-card">
+          <div class="form-group">
+            <label class="form-label" data-i18n="labelNickname">ชื่อเล่นในเกม *</label>
+            <input type="text" id="regNickname" class="form-input" maxlength="16" required data-i18n-placeholder="placeholderNickname" placeholder="เช่น กระต่ายสายซิ่ง (2-16 ตัวอักษร)">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" data-i18n="labelPhone">เบอร์โทรศัพท์ (สำหรับรับรางวัล)</label>
+            <input type="tel" id="regPhone" class="form-input" maxlength="12" data-i18n-placeholder="placeholderPhone" placeholder="08X-XXX-XXXX">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" data-i18n="labelEmail">อีเมล (ถ้ามี)</label>
+            <input type="email" id="regEmail" class="form-input" data-i18n-placeholder="placeholderEmail" placeholder="name@example.com">
+          </div>
+
+          <label class="checkbox-label">
+            <input type="checkbox" id="regPdpaConsent" required checked>
+            <span>
+              <span data-i18n="pdpaConsent">ฉันยอมรับข้อตกลงและยินยอมให้เก็บรวบรวมข้อมูลส่วนบุคคลตาม</span>
+              <a href="#" id="btnOpenPdpaModal" class="pdpa-link" data-i18n="privacyPolicyLink">นโยบายความเป็นส่วนตัว (PDPA)</a>
+            </span>
+          </label>
+
+          <div id="regError" class="form-error"></div>
+
+          <button type="submit" class="btn-primary" data-i18n="btnSubmitRegister">
+            พร้อมแล้ว ลุยเลย!
+          </button>
+        </form>
+      </section>
+
+      <!-- 3. TUTORIAL SCREEN (3 SLIDES) -->
+      <section id="screen-tutorial" class="screen">
+        <h2 style="font-size:20px; text-align:center;" data-i18n="tutorialTitle">วิธีเล่น ISUZU RUSH</h2>
+
+        <div class="tutorial-slider">
+          <!-- Slide 1 -->
+          <div class="tutorial-slide active" data-slide="0">
+            <img src="./assets/characters/rabbit_idle.svg" class="tutorial-img" alt="Jump">
+            <h3 style="font-size:18px; color:#FFF;" data-i18n="slide1Title">1. แตะเพื่อกระโดด & ดับเบิ้ลจัมป์</h3>
+            <p style="font-size:14px; color:#BBB; max-width:280px;" data-i18n="slide1Desc">
+              แตะหน้าจอ หรือกด Spacebar เพื่อกระโดด แตะค้างเพื่อกระโดดสูง หรือแตะซ้ำกลางอากาศเพื่อกระโดด 2 จังหวะ (Double Jump)!
+            </p>
+          </div>
+
+          <!-- Slide 2 -->
+          <div class="tutorial-slide" data-slide="1">
+            <div style="display:flex; gap:14px; align-items:center; justify-content:center;">
+              <img src="./assets/items/carrot.svg" style="width:40px;" alt="Carrot">
+              <img src="./assets/items/ticket.svg" style="width:44px;" alt="Ticket">
+              <img src="./assets/items/key_tsh.svg" style="width:44px;" alt="TSH Key">
+              <img src="./assets/items/charger.svg" style="width:38px;" alt="Charger">
+            </div>
+            <h3 style="font-size:18px; color:#FFF;" data-i18n="slide2Title">2. เก็บแครอทและไอเท็มพิเศษ</h3>
+            <p style="font-size:14px; color:#BBB; max-width:280px;" data-i18n="slide2Desc">
+              แครอท (+10) • ตั๋ว VIP (+50) • กุญแจ TSH (+100 & ตัวคูณ 2 เท่า 5 วินาที) • ที่ชาร์จ (ฟื้นพลังชีวิต)
+            </p>
+          </div>
+
+          <!-- Slide 3 -->
+          <div class="tutorial-slide" data-slide="2">
+            <div style="display:flex; gap:12px; align-items:center; justify-content:center;">
+              <img src="./assets/obstacles/toolbox.svg" style="width:36px;" alt="Toolbox">
+              <img src="./assets/obstacles/tire.svg" style="width:32px;" alt="Tire">
+              <img src="./assets/obstacles/cone.svg" style="width:28px;" alt="Cone">
+              <img src="./assets/vehicles/truck_obstacle.svg" style="width:70px;" alt="Isuzu Truck">
+            </div>
+            <h3 style="font-size:18px; color:#FFF;" data-i18n="slide3Title">3. หลบสิ่งกีดขวาง & รถกระบะ</h3>
+            <p style="font-size:14px; color:#BBB; max-width:280px;" data-i18n="slide3Desc">
+              หลบกล่องเครื่องมือ ยางรถยนต์ กรวย หลุม และรถกระบะอีซูซุที่วิ่งสวนมา! ทำ Combo รับคะแนน x2, x3, x5!
+            </p>
+          </div>
+        </div>
+
+        <div style="width:100%; display:flex; flex-direction:column; align-items:center; gap:12px;">
+          <div class="slide-dots">
+            <span class="slide-dot active"></span>
+            <span class="slide-dot"></span>
+            <span class="slide-dot"></span>
+          </div>
+
+          <button id="btnNextSlide" class="btn-primary" data-i18n="next">ถัดไป</button>
+          <button id="btnSkipTutorial" class="btn-secondary" style="border:none;" data-i18n="skip">ข้าม</button>
+        </div>
+      </section>
+
+      <!-- 4. IN-GAME SCREEN -->
+      <section id="screen-game" class="screen">
+        <canvas id="gameCanvas"></canvas>
+        <div class="in-game-top-buttons">
+          <button id="btnInGameSound" class="btn-ingame" title="Sound">🔊</button>
+          <button id="btnInGamePause" class="btn-ingame" title="Pause">⏸</button>
+        </div>
+      </section>
+
+      <!-- 5. GAME OVER SCREEN -->
+      <section id="screen-gameover" class="screen">
+        <div>
+          <img id="resMascotImg" src="./assets/characters/rabbit_thumbsup.svg" style="width:100px; height:auto; margin:0 auto 6px; display:block;" alt="Result Mascot">
+          <h2 style="font-size:26px; color:var(--brand-red); font-weight:900;" data-i18n="gameOverTitle">เกมจบแล้ว!</h2>
+          <p id="resCheerMsg" style="font-size:13px; color:#FFD700; font-weight:600; min-height:20px; margin-top:2px;"></p>
+        </div>
+
+        <div class="result-card">
+          <div class="stat-box">
+            <span class="stat-label" data-i18n="finalScore">คะแนนของคุณ</span>
+            <span id="resScore" class="stat-val gold">0</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-label" data-i18n="finalDistance">ระยะทางที่ทำได้</span>
+            <span id="resDistance" class="stat-val">0 ม.</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-label" data-i18n="personalBest">สถิติสูงสุดส่วนตัว</span>
+            <span id="resBestScore" class="stat-val">0</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-label" data-i18n="currentRank">อันดับปัจจุบัน</span>
+            <span id="resCurrentRank" class="stat-val red">-</span>
+          </div>
+        </div>
+
+        <!-- Biturbo Campaign Showcase Promo Card -->
+        <div class="campaign-promo-card">
+          <div class="campaign-promo-badge">⚡ ขุมพลังใหม่ ISUZU 2.2 MAXFORCE BITURBO ⚡</div>
+          <img src="./assets/brand/campaign_banner.jpg" alt="ISUZU 2.2 Biturbo" class="campaign-promo-img">
+          <img src="./assets/brand/biturbo_slogan.png" alt="โบเทอร์โบ แรง...หยุดโลก" class="campaign-promo-slogan">
+        </div>
+
+        <div style="width:100%; display:flex; flex-direction:column; gap:10px;">
+          <button id="btnPlayAgain" class="btn-primary" data-i18n="btnPlayAgain">
+            🔄 วิ่งอีกครั้ง
+          </button>
+          <button id="btnGameOverLeaderboard" class="btn-secondary" data-i18n="btnViewLeaderboard">
+            🏆 ดูตารางอันดับ
+          </button>
+          <button id="btnShareScore" class="btn-secondary" data-i18n="btnShareScore">
+            📤 แชร์คะแนน
+          </button>
+        </div>
+      </section>
+
+      <!-- 6. LEADERBOARD SCREEN -->
+      <section id="screen-leaderboard" class="screen">
+        <div class="lb-header">
+          <button id="btnBackFromLb" class="btn-icon-pill" data-i18n="back">← ย้อนกลับ</button>
+          <h2 style="font-size:18px;" data-i18n="lbTitle">ตารางผู้นำความเร็ว</h2>
+          <span style="font-size:11px; color:#888;" data-i18n="refreshing">อัปเดต 15s</span>
+        </div>
+
+        <div class="lb-tabs">
+          <div class="lb-tab" data-period="today" data-i18n="tabToday">วันนี้</div>
+          <div class="lb-tab" data-period="week" data-i18n="tabWeek">สัปดาห์นี้</div>
+          <div class="lb-tab active" data-period="all" data-i18n="tabAll">ตลอดกาล</div>
+        </div>
+
+        <div id="lbListContainer" class="lb-list">
+          <!-- Populated dynamically via JS -->
+        </div>
+
+        <!-- Sticky Pinned Player Position at bottom -->
+        <div id="lbPinnedPlayer" class="lb-pinned-footer" style="display:none;"></div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- PDPA Privacy Policy Modal -->
+  <div id="modal-pdpa" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 style="font-size:16px; color:#FFF;" data-i18n="pdpaModalTitle">นโยบายความเป็นส่วนตัว (PDPA)</h3>
+        <button id="btnClosePdpaModal" style="background:none; border:none; color:#AAA; font-size:20px; cursor:pointer;">&times;</button>
+      </div>
+      <div class="modal-body" data-i18n="pdpaContent">
+        <!-- Injected from i18n -->
+      </div>
+      <div class="modal-footer">
+        <button onclick="document.getElementById('modal-pdpa').classList.remove('active')" class="btn-primary" style="padding:10px; font-size:15px;" data-i18n="close">
+          เข้าใจแล้ว
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="./js/assets.config.js"></script>
+  <script src="./js/game.config.js"></script>
+  <script src="./js/i18n.js"></script>
+  <script src="./js/qrcode-lib.js"></script>
+  <script src="./js/game/audio.js"></script>
+  <script src="./js/game/background.js"></script>
+  <script src="./js/game/player.js"></script>
+  <script src="./js/game/obstacles.js"></script>
+  <script src="./js/game/items.js"></script>
+  <script src="./js/game/ui.js"></script>
+  <script src="./js/game/engine.js"></script>
+  <script src="./js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ISUZU RUSH - Admin Dashboard & จัดการกิจกรรม</title>
+  <link rel="stylesheet" href="./css/admin.css">
+</head>
+<body>
+
+  <!-- 1. LOGIN OVERLAY (PIN REQUIRED) -->
+  <div id="adminLoginOverlay" class="admin-login-overlay">
+    <div class="login-card">
+      <img src="./assets/images/logo.svg" style="width:200px; margin-bottom:16px;" alt="ISUZU RUSH">
+      <h2>ผู้ดูแลระบบกิจกรรม</h2>
+      <p>กรุณาระบุรหัส PIN เพื่อเข้าสู่แผงควบคุม (เริ่มต้น: isuzu2026)</p>
+      <form id="adminLoginForm">
+        <input type="password" id="adminPinInput" class="login-input" placeholder="••••••••" required autofocus>
+        <div id="adminLoginError" style="color:#FF5252; font-size:13px; margin-bottom:12px; min-height:18px;"></div>
+        <button type="submit" class="btn-admin">เข้าสู่ระบบ</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. MAIN ADMIN CONTENT -->
+  <div id="adminMainContent" style="display:none;">
+    <!-- Header -->
+    <header class="dashboard-header">
+      <div class="header-brand">
+        <img src="./assets/images/logo.svg" alt="ISUZU RUSH">
+        <span class="header-badge">EVENT ADMIN</span>
+      </div>
+      <div class="header-actions">
+        <a href="./index.html" target="_blank" class="btn-outline">🎮 เปิดหน้าเกม</a>
+        <a href="./qr.html" target="_blank" class="btn-outline">📱 พิมพ์ QR Code</a>
+        <button id="btnAdminLogout" class="btn-outline" style="border-color:#E60012; color:#FF5252;">ออกจากระบบ</button>
+      </div>
+    </header>
+
+    <main class="dashboard-container">
+
+      <!-- Metrics Row -->
+      <section class="metrics-grid">
+        <div class="metric-card">
+          <span class="metric-title">👥 ผู้เล่นลงทะเบียนทั้งหมด</span>
+          <span id="statTotalPlayers" class="metric-value">0</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-title">🎮 จำนวนรอบการเล่นสะสม</span>
+          <span id="statTotalPlays" class="metric-value">0</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-title">🔥 จำนวนรอบวันนี้</span>
+          <span id="statPlaysToday" class="metric-value" style="color:var(--brand-gold);">0</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-title">⏱ เวลาเล่นเฉลี่ยต่อรอบ</span>
+          <span id="statAvgTime" class="metric-value" style="color:var(--brand-green);">0s</span>
+        </div>
+      </section>
+
+      <!-- Hourly Chart & Source Breakdown -->
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:20px;">
+        <!-- Chart Section -->
+        <section class="admin-section">
+          <div class="section-head">
+            <h3 class="section-title">📊 สถิติการเล่นรายชั่วโมง (24 ชม. ที่ผ่านมา)</h3>
+          </div>
+          <div id="hourlyChartContainer"></div>
+        </section>
+
+        <!-- Source Section -->
+        <section class="admin-section">
+          <div class="section-head">
+            <h3 class="section-title">🏷 แหล่งที่มาของผู้เล่น (?src=)</h3>
+          </div>
+          <div id="sourceStatsContainer" class="source-stats-list"></div>
+        </section>
+      </div>
+
+      <!-- Player Management Table -->
+      <section class="admin-section">
+        <div class="section-head">
+          <h3 class="section-title">🏆 จัดการรายชื่อผู้เล่น & คะแนน</h3>
+          <div class="table-toolbar">
+            <input type="text" id="adminSearchInput" class="search-input" placeholder="🔍 ค้นหาชื่อเล่น หรือเบอร์...">
+            <button id="btnExportTop50" class="btn-admin" style="background:#2C3E50; padding:8px 14px; font-size:13px;">
+              📥 Export Top 50 (CSV)
+            </button>
+            <button id="btnExportAll" class="btn-admin" style="background:#006266; padding:8px 14px; font-size:13px;">
+              📥 Export ทั้งหมด (CSV)
+            </button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>ชื่อเล่น</th>
+                <th>เบอร์โทร</th>
+                <th>คะแนนสูงสุด</th>
+                <th>ระยะทาง</th>
+                <th>เล่นสะสม</th>
+                <th>ช่องทาง</th>
+                <th>การจัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="adminPlayersTableBody">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px;">
+          <span id="adminPageInfo" style="font-size:13px; color:var(--admin-muted);">หน้า 1</span>
+          <div style="display:flex; gap:8px;">
+            <button id="btnPrevPage" class="btn-outline" style="padding:6px 12px; font-size:13px;">◀ ก่อนหน้า</button>
+            <button id="btnNextPage" class="btn-outline" style="padding:6px 12px; font-size:13px;">ถัดไป ▶</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Event Settings & Reset Leaderboard -->
+      <section class="admin-section">
+        <div class="section-head">
+          <h3 class="section-title">⚙️ ตั้งค่ากิจกรรม & กฎของเกม</h3>
+        </div>
+
+        <form id="adminConfigForm">
+          <div class="config-grid">
+            <div class="config-group">
+              <label>ชื่องานกิจกรรม</label>
+              <input type="text" id="cfgEventTitle" class="config-input">
+            </div>
+
+            <div class="config-group">
+              <label>สถานะกิจกรรม</label>
+              <select id="cfgEventActive" class="config-select">
+                <option value="true">เปิดรับการแข่งขัน (Active)</option>
+                <option value="false">ปิดรับการแข่งขันแล้ว (Ended)</option>
+              </select>
+            </div>
+
+            <div class="config-group">
+              <label>ระดับความยากของเกม (Difficulty Preset)</label>
+              <select id="cfgDifficulty" class="config-select">
+                <option value="easy">Easy (ง่าย - เริ่ม 170, สูงสุด 500, เพิ่ม +1.8/s)</option>
+                <option value="normal" selected>Normal (มาตรฐาน - เริ่ม 210, สูงสุด 620, เพิ่ม +2.5/s)</option>
+                <option value="hard">Hard (ท้าทาย - เริ่ม 280, สูงสุด 760, เพิ่ม +4.0/s)</option>
+              </select>
+            </div>
+
+            <div class="config-group">
+              <label>จำนวนชีวิตต่อรอบ</label>
+              <select id="cfgLives" class="config-select">
+                <option value="1">1 ชีวิต (Hardcore ชนครั้งเดียวจบ)</option>
+                <option value="3">3 ชีวิต (มาตรฐาน แนะนำสำหรับงานอีเวนต์)</option>
+                <option value="5">5 ชีวิต (เล่นง่าย เหมาะกับเด็ก/กิจกรรมครอบครัว)</option>
+              </select>
+            </div>
+
+            <div class="config-group">
+              <label>ความเร็วเริ่มต้น (Base Speed)</label>
+              <select id="cfgBaseSpeed" class="config-select">
+                <option value="4.5">ช้า (Slow - 4.5)</option>
+                <option value="6.0">ปานกลาง (Normal - 6.0)</option>
+                <option value="7.5">เร็ว (Fast - 7.5)</option>
+              </select>
+            </div>
+
+            <div class="config-group">
+              <label>บังคับกรอกเบอร์โทรศัพท์ตอนสมัคร</label>
+              <select id="cfgRequirePhone" class="config-select">
+                <option value="false">ไม่บังคับ (ผู้เล่นเข้าเล่นได้เร็วกว่า)</option>
+                <option value="true">บังคับกรอก (สำหรับงานที่ต้องติดต่อแจกรางวัล)</option>
+              </select>
+            </div>
+
+            <div class="config-group">
+              <label>ข้อความประกาศหน้าแรก</label>
+              <input type="text" id="cfgAnnouncement" class="config-input">
+            </div>
+          </div>
+
+          <div style="margin-top:20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <button type="submit" class="btn-admin" style="max-width:200px;">
+              💾 บันทึกการตั้งค่า
+            </button>
+
+            <!-- Danger Zone -->
+            <button type="button" id="btnResetLeaderboard" class="btn-outline" style="border-color:#E60012; color:#FF5252;">
+              ⚠️ รีเซ็ต Leaderboard ทั้งหมด
+            </button>
+          </div>
+        </form>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="./js/admin.js"></script>
+</body>
+</html>

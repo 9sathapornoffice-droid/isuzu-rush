@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ISUZU RUSH - สร้างและดาวน์โหลด QR Code สำหรับพิมพ์แจก</title>
+  <link rel="stylesheet" href="./css/admin.css">
+  <style>
+    .qr-page-container {
+      max-width: 860px;
+      margin: 30px auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .qr-card-preview {
+      background: #FFFFFF;
+      color: #111111;
+      border-radius: 24px;
+      padding: 32px 24px;
+      text-align: center;
+      max-width: 360px;
+      margin: 0 auto;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+      border: 4px solid var(--brand-red);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+    .qr-canvas-box {
+      background: #FFFFFF;
+      padding: 12px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .qr-tagline {
+      font-size: 14px;
+      font-weight: 600;
+      color: #555;
+    }
+    .qr-scan-badge {
+      background: var(--brand-red);
+      color: #FFF;
+      font-weight: 700;
+      padding: 8px 18px;
+      border-radius: 30px;
+      font-size: 15px;
+      letter-spacing: 0.5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-header">
+    <div class="header-brand">
+      <img src="./assets/images/logo.svg" alt="ISUZU RUSH">
+      <span class="header-badge">QR CODE GENERATOR</span>
+    </div>
+    <div class="header-actions">
+      <a href="./index.html" class="btn-outline">🎮 ไปที่เกม</a>
+      <a href="./admin.html" class="btn-outline">🛠 แดชบอร์ด</a>
+    </div>
+  </div>
+
+  <div class="qr-page-container">
+    <div class="admin-section">
+      <div class="section-head">
+        <h2 class="section-title">📱 กำหนดค่า QR Code สำหรับพิมพ์สื่อโปรโมต</h2>
+      </div>
+
+      <div class="config-grid">
+        <div class="config-group">
+          <label>ช่องทาง / จุดแจก (Source Tracking: ?src=)</label>
+          <select id="qrSourceSelect" class="config-select">
+            <option value="ticket">บัตรเข้าชมงาน / ตั๋ว (ticket)</option>
+            <option value="booth_a">บูธจัดแสดงหลัก A (booth_a)</option>
+            <option value="booth_b">โซนทดลองขับ B (booth_b)</option>
+            <option value="line_oa">LINE Official Account (line_oa)</option>
+            <option value="facebook">Facebook Campaign (facebook)</option>
+            <option value="custom">กำหนดเอง (Custom)...</option>
+          </select>
+        </div>
+
+        <div class="config-group" id="customSourceGroup" style="display:none;">
+          <label>ระบุชื่อแท็ก source กำหนดเอง</label>
+          <input type="text" id="customSourceInput" class="config-input" placeholder="เช่น banner_hall1">
+        </div>
+
+        <div class="config-group">
+          <label>ขนาด QR Code (Pixels)</label>
+          <select id="qrSizeSelect" class="config-select">
+            <option value="256">256 x 256 (สำหรับเว็บ/มือถือ)</option>
+            <option value="400" selected>400 x 400 (สำหรับพิมพ์การ์ด/ตั๋ว)</option>
+            <option value="800">800 x 800 (สำหรับพิมพ์โปสเตอร์/ป้ายบูธขนาดใหญ่)</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-top:16px;">
+        <label style="font-size:13px; color:var(--admin-muted);">URL ปลายทางที่จะถูกสแกน:</label>
+        <div style="display:flex; gap:10px; margin-top:6px;">
+          <input type="text" id="finalUrlInput" class="config-input" style="flex:1;" readonly>
+          <button id="btnCopyUrl" class="btn-outline" style="white-space:nowrap;">📋 คัดลอกลิงก์</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Printable Card Preview -->
+    <div style="text-align:center;">
+      <h3 style="margin-bottom:12px; font-size:16px; color:var(--admin-muted);">ตัวอย่างการ์ดพิมพ์จริง (Print Preview)</h3>
+      <div id="printableCard" class="qr-card-preview">
+        <img src="./assets/images/logo.svg" style="width:200px; height:auto;" alt="ISUZU RUSH">
+        <div class="qr-tagline">สแกนเพื่อเริ่มซิ่ง ไม่ต้องติดตั้งแอป!</div>
+        <div id="qrCanvasContainer" class="qr-canvas-box"></div>
+        <div class="qr-scan-badge">⚡ ขับชิงรางวัลใหญ่ประจำวัน ⚡</div>
+      </div>
+
+      <div style="display:flex; justify-content:center; gap:14px; margin-top:20px; flex-wrap:wrap;">
+        <button id="btnDownloadQr" class="btn-admin" style="max-width:240px;">
+          📥 ดาวน์โหลด QR Code (PNG)
+        </button>
+        <button id="btnPrintCard" class="btn-outline" style="max-width:240px;">
+          🖨 พิมพ์การ์ดโปรโมต (Print)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="./js/qrcode-lib.js"></script>
+  <script>
+    const basePath = window.location.pathname.replace(/\/[^/]*$/, '/');
+    const baseUrl = `${window.location.origin}${basePath}`;
+    const sourceSelect = document.getElementById('qrSourceSelect');
+    const customGroup = document.getElementById('customSourceGroup');
+    const customInput = document.getElementById('customSourceInput');
+    const sizeSelect = document.getElementById('qrSizeSelect');
+    const finalUrlInput = document.getElementById('finalUrlInput');
+    const container = document.getElementById('qrCanvasContainer');
+
+    let currentQr = null;
+
+    function updateUrlAndQR() {
+      let src = sourceSelect.value;
+      if (src === 'custom') {
+        customGroup.style.display = 'flex';
+        src = customInput.value.trim() || 'booth';
+      } else {
+        customGroup.style.display = 'none';
+      }
+
+      const fullUrl = `${baseUrl}?src=${encodeURIComponent(src)}`;
+      finalUrlInput.value = fullUrl;
+
+      const size = parseInt(sizeSelect.value, 10) || 400;
+
+      container.innerHTML = '';
+      currentQr = new QRCode(container, {
+        text: fullUrl,
+        width: 220,
+        height: 220,
+        colorDark: '#000000',
+        colorLight: '#ffffff'
+      });
+    }
+
+    sourceSelect.addEventListener('change', updateUrlAndQR);
+    customInput.addEventListener('input', updateUrlAndQR);
+    sizeSelect.addEventListener('change', updateUrlAndQR);
+
+    document.getElementById('btnCopyUrl').addEventListener('click', () => {
+      navigator.clipboard.writeText(finalUrlInput.value).then(() => {
+        alert('คัดลอกลิงก์สำเร็จ: ' + finalUrlInput.value);
+      });
+    });
+
+    document.getElementById('btnDownloadQr').addEventListener('click', () => {
+      if (!currentQr) return;
+      const size = parseInt(sizeSelect.value, 10) || 400;
+      
+      // Render dedicated download canvas at requested high resolution
+      const tempDiv = document.createElement('div');
+      const hiResQr = new QRCode(tempDiv, {
+        text: finalUrlInput.value,
+        width: size,
+        height: size,
+        colorDark: '#000000',
+        colorLight: '#ffffff'
+      });
+
+      const link = document.createElement('a');
+      link.download = `isuzu_rush_qr_${sourceSelect.value}_${size}px.png`;
+      link.href = hiResQr.toDataURL();
+      link.click();
+    });
+
+    document.getElementById('btnPrintCard').addEventListener('click', () => {
+      window.print();
+    });
+
+    updateUrlAndQR();
+  </script>
+</body>
+</html>
