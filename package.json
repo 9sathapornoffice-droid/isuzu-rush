@@ -2,11 +2,10 @@
   "name": "isuzu-rush",
   "version": "1.0.0",
   "description": "ISUZU RUSH - 2D Endless Runner Mobile Web Game for Brand Promotion",
-  "main": "server/server.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node server/server.js",
-    "dev": "node --watch server/server.js",
-    "seed": "node server/seed.js"
+    "start": "node server.js",
+    "dev": "node --watch server.js"
   },
   "keywords": [
     "isuzu",
