@@ -53,7 +53,10 @@
 html, body {
   width: 100%;
   height: 100%;
+  height: 100dvh;
   overflow: hidden;
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
   background-color: #08080A;
   font-family: var(--font-main);
   color: var(--brand-text);
@@ -63,6 +66,7 @@ html, body {
 .app-wrapper {
   width: 100%;
   height: 100%;
+  height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -72,21 +76,37 @@ html, body {
 .mobile-frame {
   position: relative;
   width: 100%;
-  max-width: 440px;
   height: 100%;
-  max-height: 880px;
   background-color: var(--brand-black);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
-@media (min-width: 500px) {
+@media (min-width: 501px) {
   .mobile-frame {
-    border-radius: 36px;
+    max-width: 440px;
+    max-height: 880px;
     height: 92vh;
+    border-radius: 36px;
     border: 8px solid #282830;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  }
+}
+
+@media (max-width: 500px) {
+  .app-wrapper {
+    background: var(--brand-black);
+    padding: 0;
+  }
+  .mobile-frame {
+    width: 100vw;
+    height: 100dvh;
+    max-width: 100vw;
+    max-height: 100dvh;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
   }
 }
 
@@ -502,25 +522,32 @@ html, body {
 
 .in-game-top-buttons {
   position: absolute;
-  top: calc(var(--safe-top) + 10px);
+  top: calc(var(--safe-top) + 8px);
   right: 12px;
   display: flex;
   gap: 8px;
-  z-index: 20;
+  z-index: 30;
 }
 
 .btn-ingame {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(14, 14, 20, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   color: #FFF;
   font-size: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 0.1s ease, background-color 0.1s ease;
+}
+
+.btn-ingame:active {
+  transform: scale(0.9);
+  background: rgba(221, 0, 0, 0.85);
 }
 
 /* --- GAME OVER SCREEN --- */
@@ -746,6 +773,155 @@ html, body {
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   MOBILE RESPONSIVENESS OPTIMIZATIONS (Android & iPhone)
+   ========================================================================== */
+
+/* 1. Universal Screen Adaptations for Mobile */
+@media (max-width: 500px) {
+  #screen-splash,
+  #screen-register,
+  #screen-gameover {
+    padding-left: 18px;
+    padding-right: 18px;
+    padding-top: calc(var(--safe-top) + 14px);
+    padding-bottom: calc(var(--safe-bottom) + 14px);
+  }
+
+  .splash-hero {
+    gap: 8px;
+  }
+
+  .splash-campaign-card {
+    max-width: 300px;
+  }
+
+  .splash-buttons {
+    width: 100%;
+    max-width: 340px;
+    gap: 10px;
+  }
+
+  .btn-primary {
+    font-size: 16px;
+    padding: 14px 20px;
+  }
+
+  .btn-secondary {
+    font-size: 14px;
+    padding: 12px 18px;
+  }
+
+  .reg-card {
+    padding: 18px 16px;
+    border-radius: 18px;
+    gap: 14px;
+  }
+
+  .modal-box {
+    max-width: 92vw;
+    border-radius: 18px;
+  }
+}
+
+/* 2. Compact Screen Heights (iPhone SE, Small Android Phones <= 720px) */
+@media (max-height: 720px) {
+  #screen-splash,
+  #screen-gameover {
+    justify-content: flex-start;
+    gap: 12px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .splash-hero {
+    gap: 6px;
+  }
+
+  .splash-campaign-card {
+    max-width: 250px;
+    margin-bottom: 2px;
+  }
+
+  .splash-title-group {
+    margin: 4px 0;
+  }
+
+  .splash-biturbo-logo {
+    max-height: 44px;
+  }
+
+  .splash-slogan-img {
+    max-height: 24px;
+  }
+
+  .mascot-badge-tag {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+
+  .splash-buttons {
+    gap: 8px;
+    margin-top: auto;
+    padding-bottom: 6px;
+  }
+
+  .btn-primary {
+    padding: 12px 18px;
+    font-size: 15px;
+  }
+
+  .btn-secondary {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+
+  .gameover-hero {
+    margin-bottom: 6px;
+  }
+
+  .gameover-hero h2 {
+    font-size: 26px;
+  }
+
+  .result-card {
+    padding: 14px;
+    gap: 10px;
+  }
+
+  .result-primary-score .score-value {
+    font-size: 36px;
+  }
+
+  .result-stat-box {
+    padding: 8px 10px;
+  }
+
+  .result-stat-val {
+    font-size: 16px;
+  }
+
+  .gameover-buttons {
+    gap: 8px;
+  }
+}
+
+/* 3. Modern Tall Screens (iPhone 14/15/16 Pro Max, Galaxy S23/S24 Ultra >= 840px) */
+@media (min-height: 840px) and (max-width: 500px) {
+  .splash-hero {
+    gap: 16px;
+    margin: auto 0;
+  }
+
+  .splash-campaign-card {
+    max-width: 320px;
+  }
+
+  .splash-buttons {
+    margin-bottom: 12px;
+  }
 }
 
 </style>
@@ -2645,6 +2821,17 @@ class RabbitPlayer {
     this.currentAirTimer = 0;
   }
 
+  resize(roadY) {
+    const newBaseY = roadY - this.height + 6;
+    if (this.isGrounded) {
+      this.y = newBaseY;
+    } else {
+      const diff = newBaseY - this.baseY;
+      this.y += diff;
+    }
+    this.baseY = newBaseY;
+  }
+
   startJump() {
     this.isHoldingJump = true;
 
@@ -3392,11 +3579,17 @@ class GameHUD {
   constructor(canvasWidth, canvasHeight) {
     this.w = canvasWidth;
     this.h = canvasHeight;
+    this.safeTop = 0;
   }
 
-  resize(w, h) {
+  resize(w, h, safeTop = 0) {
     this.w = w;
     this.h = h;
+    if (safeTop !== undefined) this.safeTop = safeTop;
+  }
+
+  setSafeTop(safeTop) {
+    this.safeTop = safeTop || 0;
   }
 
   render(ctx, {
@@ -3414,33 +3607,36 @@ class GameHUD {
   }) {
     ctx.save();
 
-    // 1. Top HUD Glass Banner
-    const bannerH = 52;
+    const safeTop = this.safeTop || 0;
+
+    // 1. Top HUD Glass Banner (Seamlessly covers notch/island)
+    const bannerH = 50 + safeTop;
     const grad = ctx.createLinearGradient(0, 0, 0, bannerH);
-    grad.addColorStop(0, 'rgba(18, 18, 22, 0.95)');
-    grad.addColorStop(1, 'rgba(18, 18, 22, 0.45)');
+    grad.addColorStop(0, 'rgba(12, 12, 16, 0.95)');
+    grad.addColorStop(0.7, 'rgba(16, 16, 22, 0.85)');
+    grad.addColorStop(1, 'rgba(16, 16, 22, 0.35)');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, this.w, bannerH);
 
     // 2. Score & Carrot Icon (Top Left)
-    ctx.font = "bold 20px 'Kanit', sans-serif";
+    ctx.font = "bold 19px 'Kanit', sans-serif";
     ctx.fillStyle = '#FFD700';
-    ctx.fillText(`${score}`, 16, 32);
+    ctx.fillText(`${score}`, 14, safeTop + 28);
 
     ctx.font = "11px 'Kanit', sans-serif";
     ctx.fillStyle = '#FFA726';
-    ctx.fillText(`🥕 ${carrots || 0} ${window.t('score')}`, 16, 45);
+    ctx.fillText(`🥕 ${carrots || 0} ${window.t('score')}`, 14, safeTop + 42);
 
     // 3. Distance (Center Left)
-    ctx.font = "bold 18px 'Kanit', sans-serif";
+    ctx.font = "bold 17px 'Kanit', sans-serif";
     ctx.fillStyle = '#FFFFFF';
-    ctx.fillText(`${Math.floor(distance)} ${window.t('meters')}`, 115, 32);
+    ctx.fillText(`${Math.floor(distance)} ${window.t('meters')}`, 105, safeTop + 28);
 
     ctx.font = "11px 'Kanit', sans-serif";
     ctx.fillStyle = '#AAAAAA';
-    ctx.fillText(window.t('distance'), 115, 45);
+    ctx.fillText(window.t('distance'), 105, safeTop + 42);
 
-    // 4. Lives HUD Pill (Positioned below top-right buttons: y=52, never overlaps sound/pause)
+    // 4. Lives HUD Pill (Positioned below top-right buttons: safeTop + 48, never overlaps sound/pause)
     const heartSpacing = 24;
     const heartSize = 10;
     const heartsWidth = (maxLives - 1) * heartSpacing;
@@ -3448,7 +3644,7 @@ class GameHUD {
     const badgeW = badgePadding * 2 + 24 + heartsWidth;
     const badgeH = 28;
     const badgeX = this.w - 12 - badgeW;
-    const badgeY = 52;
+    const badgeY = safeTop + 48;
 
     // Dark glass pill container for maximum contrast
     ctx.save();
@@ -3479,8 +3675,8 @@ class GameHUD {
 
     // 5. Combo Multiplier Badge & Gauge
     if (combo > 1) {
-      const comboX = 16;
-      const comboY = 64;
+      const comboX = 14;
+      const comboY = safeTop + 52;
       const badgeW = 78;
       const badgeH = 22;
 
@@ -3500,8 +3696,8 @@ class GameHUD {
 
     // 6. 2.2 Biturbo Multiplier Boost Indicator
     if (tshBoostTimer > 0) {
-      const boostX = combo > 1 ? 102 : 16;
-      const boostY = 64;
+      const boostX = combo > 1 ? 98 : 14;
+      const boostY = safeTop + 52;
       const pulse = 0.85 + Math.sin(Date.now() * 0.01) * 0.15;
       ctx.fillStyle = `rgba(221, 0, 0, ${pulse})`;
       ctx.beginPath();
@@ -3520,12 +3716,12 @@ class GameHUD {
     if (isBossRush) {
       const pulseAlpha = 0.7 + Math.sin(Date.now() * 0.008) * 0.25;
       ctx.fillStyle = `rgba(221, 0, 0, ${pulseAlpha})`;
-      ctx.fillRect(0, 92, this.w, 28);
+      ctx.fillRect(0, safeTop + 80, this.w, 28);
 
       ctx.font = "bold 14px 'Kanit', sans-serif";
       ctx.fillStyle = '#FFFFFF';
       ctx.textAlign = 'center';
-      ctx.fillText('⚡ SPEED RUSH! หลบสิ่งกีดขวาง 10 วิ! ⚡', this.w / 2, 111);
+      ctx.fillText('⚡ SPEED RUSH! หลบสิ่งกีดขวาง 10 วิ! ⚡', this.w / 2, safeTop + 99);
       ctx.textAlign = 'start';
     }
 
@@ -3656,34 +3852,66 @@ class RunnerGame {
 
   setupResize() {
     const handleResize = () => {
-      const dpr = window.devicePixelRatio || 1;
-      this.canvas.width = this.virtualWidth * dpr;
-      this.canvas.height = this.virtualHeight * dpr;
+      const parent = this.canvas.parentElement;
+      const rect = parent ? parent.getBoundingClientRect() : this.canvas.getBoundingClientRect();
+      const clientW = Math.max(320, rect.width || window.innerWidth);
+      const clientH = Math.max(480, rect.height || window.innerHeight);
+
+      // Measure safe area top on device (iOS notch/dynamic island, Android punch-hole)
+      let safeTop = 0;
+      if (typeof window !== 'undefined' && document.body) {
+        const testDiv = document.createElement('div');
+        testDiv.style.cssText = 'position:fixed;top:0;left:0;height:env(safe-area-inset-top, 0px);visibility:hidden;pointer-events:none;z-index:-1;';
+        document.body.appendChild(testDiv);
+        const rawSafeTop = testDiv.offsetHeight || 0;
+        document.body.removeChild(testDiv);
+        safeTop = Math.round(rawSafeTop * (360 / clientW));
+      }
+
+      // Responsive aspect ratio: Fixed 360 width, scale virtualHeight to exact screen ratio
+      this.virtualWidth = 360;
+      const targetAspect = clientH / clientW;
+      this.virtualHeight = Math.max(540, Math.round(360 * targetAspect));
+      this.roadY = this.virtualHeight - 120;
+
+      const dpr = Math.min(window.devicePixelRatio || 1, 3);
+      this.canvas.width = Math.round(this.virtualWidth * dpr);
+      this.canvas.height = Math.round(this.virtualHeight * dpr);
+      this.ctx.setTransform(1, 0, 0, 1, 0, 0);
       this.ctx.scale(dpr, dpr);
 
       this.canvas.style.width = '100%';
       this.canvas.style.height = '100%';
+
+      // Propagate resize to all subsystems
+      if (this.background) this.background.resize(this.virtualWidth, this.virtualHeight, this.roadY);
+      if (this.player) this.player.resize(this.roadY);
+      if (this.obstacles) this.obstacles.resize(this.virtualWidth, this.roadY);
+      if (this.items) this.items.resize(this.virtualWidth, this.roadY);
+      if (this.hud) this.hud.resize(this.virtualWidth, this.virtualHeight, safeTop);
     };
 
     window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', () => {
+      setTimeout(handleResize, 150);
+    });
     handleResize();
   }
 
   bindInputs() {
     const triggerJumpStart = (e) => {
       if (this.state !== 'playing') return;
-      if (e) {
+      if (e && e.target && e.target.closest('.btn-ingame')) return;
+      if (e && e.cancelable) {
         e.preventDefault();
-        e.stopPropagation();
       }
       this.isPressing = true;
       this.player.startJump();
     };
 
     const triggerJumpEnd = (e) => {
-      if (e) {
+      if (e && e.cancelable) {
         e.preventDefault();
-        e.stopPropagation();
       }
       this.isPressing = false;
       this.player.releaseJump();
@@ -3695,6 +3923,14 @@ class RunnerGame {
 
     this.canvas.addEventListener('mousedown', triggerJumpStart);
     this.canvas.addEventListener('mouseup', triggerJumpEnd);
+
+    // Whole game screen tap support for effortless thumb tapping anywhere
+    const gameScreen = document.getElementById('screen-game');
+    if (gameScreen) {
+      gameScreen.addEventListener('touchstart', triggerJumpStart, { passive: false });
+      gameScreen.addEventListener('touchend', triggerJumpEnd, { passive: false });
+      gameScreen.addEventListener('touchcancel', triggerJumpEnd, { passive: false });
+    }
 
     window.addEventListener('keydown', (e) => {
       if (e.code === 'Space' || e.code === 'ArrowUp') {
