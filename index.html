@@ -598,30 +598,35 @@ html, body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.78);
+  background: rgba(0, 0, 0, 0.82);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   z-index: 100;
   padding: 20px;
+  box-sizing: border-box;
   animation: fadeIn 0.15s ease-out;
+}
+
+.pause-modal-overlay.active {
+  display: flex !important;
 }
 
 .pause-card {
   width: 100%;
   max-width: 320px;
-  background: linear-gradient(180deg, #1C1C24 0%, #101016 100%);
-  border: 1.5px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(221, 0, 0, 0.25);
-  border-radius: 20px;
-  padding: 24px 20px;
+  background: linear-gradient(180deg, #1E1E28 0%, #121218 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(221, 0, 0, 0.35);
+  border-radius: 24px;
+  padding: 26px 20px;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .pause-badge {
@@ -631,24 +636,24 @@ html, body {
   background: rgba(221, 0, 0, 0.18);
   border: 1px solid rgba(221, 0, 0, 0.45);
   color: #FF5252;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 800;
-  padding: 4px 12px;
+  padding: 4px 14px;
   border-radius: 999px;
   letter-spacing: 0.5px;
 }
 
 .pause-title {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 800;
   color: #FFFFFF;
-  margin: 4px 0 0;
+  margin: 2px 0 0;
 }
 
 .pause-subtitle {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--brand-text-muted);
-  margin: 0 0 8px;
+  margin: 0 0 6px;
   line-height: 1.4;
 }
 
@@ -656,31 +661,49 @@ html, body {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+  margin-top: 4px;
 }
 
 .pause-action-btn {
   width: 100%;
-  min-height: 48px;
-  font-size: 16px;
+  min-height: 50px;
+  font-size: 17px;
   font-weight: 700;
+  font-family: inherit;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  border-radius: 14px;
+  gap: 10px;
+  border-radius: 16px;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 0.12s ease, filter 0.12s ease;
+}
+
+.pause-action-btn:active {
+  transform: scale(0.96);
+  filter: brightness(0.9);
+}
+
+.pause-btn-resume {
+  background: linear-gradient(135deg, #FF1A27 0%, #E60012 50%, #B3000E 100%);
+  color: #FFFFFF;
+  border: none;
+  box-shadow: 0 6px 20px rgba(230, 0, 18, 0.5);
+}
+
+.pause-btn-restart {
+  background: #242430;
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.22);
 }
 
 .pause-btn-back {
+  background: rgba(255, 60, 60, 0.12);
   color: #FFAAAA;
-  border-color: rgba(255, 100, 100, 0.35);
-  background: rgba(255, 60, 60, 0.08);
+  border: 1px solid rgba(255, 100, 100, 0.4);
 }
-
-.pause-btn-back:active {
-  background: rgba(255, 60, 60, 0.25);
-}
-
 /* --- GAME OVER SCREEN --- */
 #screen-gameover {
   padding: calc(var(--safe-top) + 24px) 24px calc(var(--safe-bottom) + 24px);
@@ -1218,32 +1241,27 @@ html, body {
       <!-- 4. IN-GAME SCREEN -->
       <section id="screen-game" class="screen">
         <canvas id="gameCanvas"></canvas>
-        <div class="in-game-top-left">
-          <button type="button" id="btnInGameBack" class="btn-ingame btn-ingame-back" title="ย้อนกลับ">
-            ← <span style="font-size:12px; font-weight:600; margin-left:2px;" data-i18n="back">ย้อนกลับ</span>
-          </button>
-        </div>
         <div class="in-game-top-buttons">
           <button type="button" id="btnInGameSound" class="btn-ingame" title="Sound">🔊</button>
           <button type="button" id="btnInGamePause" class="btn-ingame" title="Pause">⏸</button>
         </div>
 
-        <!-- Pause Overlay Modal -->
+        <!-- Pause Overlay Modal (เมนู ⏸) -->
         <div id="pauseModal" class="pause-modal-overlay" style="display:none;">
           <div class="pause-card">
-            <div class="pause-badge">⏸️ <span data-i18n="pausedTitle">พักเกมชั่วคราว</span></div>
-            <h3 class="pause-title" data-i18n="pausedHeader">พักหายใจสักครู่</h3>
-            <p class="pause-subtitle" data-i18n="pausedSubtitle">แตะเล่นต่อเพื่อวิ่งต่อ หรือเลือกย้อนกลับไปหน้าแรก</p>
+            <div class="pause-badge">⏸️ <span data-i18n="pausedTitle">พักเกม</span></div>
+            <h3 class="pause-title" data-i18n="pausedHeader">พักเกมชั่วคราว</h3>
+            <p class="pause-subtitle" data-i18n="pausedSubtitle">เลือกเมนูที่ต้องการ</p>
             
             <div class="pause-buttons">
-              <button type="button" id="btnResumeGame" class="btn-primary pause-action-btn">
+              <button type="button" id="btnResumeGame" class="pause-action-btn pause-btn-resume">
                 ▶️ <span data-i18n="btnResume">เล่นต่อ</span>
               </button>
-              <button type="button" id="btnRestartGame" class="btn-secondary pause-action-btn">
-                🔄 <span data-i18n="btnRestart">เริ่มวิ่งใหม่</span>
+              <button type="button" id="btnRestartGame" class="pause-action-btn pause-btn-restart">
+                🔄 <span data-i18n="btnRestart">เริ่มใหม่</span>
               </button>
-              <button type="button" id="btnBackToSplash" class="btn-secondary pause-action-btn pause-btn-back">
-                🏠 <span data-i18n="btnBackToMenu">ย้อนกลับหน้าแรก</span>
+              <button type="button" id="btnBackToSplash" class="pause-action-btn pause-btn-back">
+                ← <span data-i18n="btnBackToMenu">ย้อนกลับ</span>
               </button>
             </div>
           </div>
@@ -1646,11 +1664,11 @@ const I18N = {
     meters: 'ม.',
     paused: 'หยุดชั่วคราว',
     btnResume: 'เล่นต่อ',
-    btnRestart: 'เริ่มวิ่งใหม่',
-    btnBackToMenu: 'ย้อนกลับหน้าแรก',
-    pausedTitle: 'พักเกมชั่วคราว',
-    pausedHeader: 'พักหายใจสักครู่',
-    pausedSubtitle: 'แตะเล่นต่อเพื่อวิ่งต่อ หรือเลือกย้อนกลับไปหน้าแรก',
+    btnRestart: 'เริ่มใหม่',
+    btnBackToMenu: 'ย้อนกลับ',
+    pausedTitle: 'พักเกม',
+    pausedHeader: 'พักเกมชั่วคราว',
+    pausedSubtitle: 'เลือกเมนูที่ต้องการ',
     btnQuit: 'กลับหน้าหลัก',
 
     // Game Over Screen
@@ -1742,11 +1760,11 @@ const I18N = {
     meters: 'm',
     paused: 'PAUSED',
     btnResume: 'Resume',
-    btnRestart: 'Restart Run',
-    btnBackToMenu: 'Main Menu',
-    pausedTitle: 'Game Paused',
-    pausedHeader: 'Take a Quick Breath',
-    pausedSubtitle: 'Tap Resume to continue or go back to Main Menu',
+    btnRestart: 'Restart',
+    btnBackToMenu: 'Back',
+    pausedTitle: 'Paused',
+    pausedHeader: 'Game Paused',
+    pausedSubtitle: 'Choose an option',
     btnQuit: 'Quit',
 
     // Game Over Screen
@@ -4079,7 +4097,7 @@ class RunnerGame {
     const triggerJumpStart = (e) => {
       if (this.state !== 'playing') return;
       if (e) {
-        if (e.target && e.target.closest && e.target.closest('.btn-ingame')) return;
+        if (e.target && e.target.closest && e.target.closest('.btn-ingame') || e.target.closest('.pause-modal-overlay')) return;
         if (e.cancelable) e.preventDefault();
         if (e.stopPropagation) e.stopPropagation();
       }
@@ -4670,7 +4688,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
     const pauseModal = document.getElementById('pauseModal');
-  const btnInGameBack = document.getElementById('btnInGameBack');
   const btnResumeGame = document.getElementById('btnResumeGame');
   const btnRestartGame = document.getElementById('btnRestartGame');
   const btnBackToSplash = document.getElementById('btnBackToSplash');
@@ -4679,44 +4696,94 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnBackFromGameOver = document.getElementById('btnBackFromGameOver');
 
   function showPauseModal(show) {
-    if (pauseModal) {
-      pauseModal.style.display = show ? 'flex' : 'none';
+    const modal = document.getElementById('pauseModal');
+    if (modal) {
+      if (show) {
+        modal.style.setProperty('display', 'flex', 'important');
+        modal.classList.add('active');
+      } else {
+        modal.style.setProperty('display', 'none', 'important');
+        modal.classList.remove('active');
+      }
     }
   }
 
-  btnInGamePause?.addEventListener('click', () => {
+  function pauseGameAndShowMenu() {
     if (game) {
-      game.togglePause();
-    }
-  });
-
-  btnInGameBack?.addEventListener('click', () => {
-    if (game && game.state === 'playing') {
       game.pause();
-    } else {
-      if (game) game.stop();
-      showPauseModal(false);
-      showScreen('splash');
     }
-  });
+    showPauseModal(true);
+  }
 
-  btnResumeGame?.addEventListener('click', () => {
+  function resumeGameAndHideMenu() {
+    showPauseModal(false);
     if (game) {
       game.resume();
-    } else {
-      showPauseModal(false);
     }
-  });
+  }
 
-  btnRestartGame?.addEventListener('click', () => {
+  function restartGameFromMenu() {
     showPauseModal(false);
     startGame();
+  }
+
+  function exitGameToSplash() {
+    showPauseModal(false);
+    if (game) {
+      game.stop();
+    }
+    showScreen('splash');
+  }
+
+  let lastPauseTap = 0;
+  function onPauseBtnPressed(e) {
+    const now = performance.now();
+    if (now - lastPauseTap < 250) return;
+    lastPauseTap = now;
+    if (e) {
+      if (e.stopPropagation) e.stopPropagation();
+      if (e.preventDefault && e.cancelable) e.preventDefault();
+    }
+    pauseGameAndShowMenu();
+  }
+
+  btnInGamePause?.addEventListener('click', onPauseBtnPressed);
+  btnInGamePause?.addEventListener('touchend', onPauseBtnPressed);
+
+  btnResumeGame?.addEventListener('click', (e) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    resumeGameAndHideMenu();
+  });
+  btnResumeGame?.addEventListener('touchend', (e) => {
+    if (e) {
+      if (e.stopPropagation) e.stopPropagation();
+      if (e.preventDefault && e.cancelable) e.preventDefault();
+    }
+    resumeGameAndHideMenu();
   });
 
-  btnBackToSplash?.addEventListener('click', () => {
-    showPauseModal(false);
-    if (game) game.stop();
-    showScreen('splash');
+  btnRestartGame?.addEventListener('click', (e) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    restartGameFromMenu();
+  });
+  btnRestartGame?.addEventListener('touchend', (e) => {
+    if (e) {
+      if (e.stopPropagation) e.stopPropagation();
+      if (e.preventDefault && e.cancelable) e.preventDefault();
+    }
+    restartGameFromMenu();
+  });
+
+  btnBackToSplash?.addEventListener('click', (e) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    exitGameToSplash();
+  });
+  btnBackToSplash?.addEventListener('touchend', (e) => {
+    if (e) {
+      if (e.stopPropagation) e.stopPropagation();
+      if (e.preventDefault && e.cancelable) e.preventDefault();
+    }
+    exitGameToSplash();
   });
 
   btnBackFromRegister?.addEventListener('click', () => {
@@ -4946,6 +5013,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!game) {
       game = new RunnerGame(canvas, audio, handleGameOver);
     }
+    game.onPauseStateChange = (isPaused) => {
+      showPauseModal(isPaused);
+    };
+    showPauseModal(false);
 
     showScreen('game');
     game.start(gameConfig);
