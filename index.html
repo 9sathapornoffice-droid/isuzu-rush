@@ -2843,6 +2843,7 @@ class RabbitPlayer {
       this.jumpsRemaining = 1;
       this.jumpHoldTimer = this.maxJumpHoldDuration;
       this.currentAirTimer = 0;
+      this.lastJumpTime = performance.now();
 
       // Upward vertical stretch
       this.scaleX = 0.85;
@@ -2851,10 +2852,17 @@ class RabbitPlayer {
       this.audio.playJump();
       this.createDustBurst(this.x + this.width / 2, this.baseY + this.height - 4, 8);
     } else if (this.doubleJumpEnabled && this.jumpsRemaining > 0) {
-      // Double Jump
-      this.vy = this.doubleJumpVelocity;
+      // Guard against hardware/browser duplicate touch events in same instant (< 90ms)
+      const now = performance.now();
+      if (this.lastJumpTime && (now - this.lastJumpTime < 90)) {
+        return;
+      }
+      this.lastJumpTime = now;
+
+      // Double Jump: strong, satisfying upward leap
+      this.vy = Math.min(-820, this.doubleJumpVelocity);
       this.jumpsRemaining = 0;
-      this.jumpHoldTimer = this.maxJumpHoldDuration * 0.7;
+      this.jumpHoldTimer = this.maxJumpHoldDuration * 0.75;
 
       this.scaleX = 0.82;
       this.scaleY = 1.28;
@@ -3899,24 +3907,35 @@ class RunnerGame {
   }
 
   bindInputs() {
+    let lastTouchStartTime = 0;
+
     const triggerJumpStart = (e) => {
       if (this.state !== 'playing') return;
-      if (e && e.target && e.target.closest('.btn-ingame')) return;
-      if (e && e.cancelable) {
-        e.preventDefault();
+      if (e) {
+        if (e.target && e.target.closest && e.target.closest('.btn-ingame')) return;
+        if (e.cancelable) e.preventDefault();
+        if (e.stopPropagation) e.stopPropagation();
       }
+
+      // Debounce micro touch bounces (< 45ms)
+      const now = performance.now();
+      if (now - lastTouchStartTime < 45) return;
+      lastTouchStartTime = now;
+
       this.isPressing = true;
       this.player.startJump();
     };
 
     const triggerJumpEnd = (e) => {
-      if (e && e.cancelable) {
-        e.preventDefault();
+      if (e) {
+        if (e.cancelable) e.preventDefault();
+        if (e.stopPropagation) e.stopPropagation();
       }
       this.isPressing = false;
       this.player.releaseJump();
     };
 
+    // Attach to canvas exclusively with stopPropagation to ensure single, crisp tap delivery
     this.canvas.addEventListener('touchstart', triggerJumpStart, { passive: false });
     this.canvas.addEventListener('touchend', triggerJumpEnd, { passive: false });
     this.canvas.addEventListener('touchcancel', triggerJumpEnd, { passive: false });
@@ -3924,21 +3943,20 @@ class RunnerGame {
     this.canvas.addEventListener('mousedown', triggerJumpStart);
     this.canvas.addEventListener('mouseup', triggerJumpEnd);
 
-    // Whole game screen tap support for effortless thumb tapping anywhere
-    const gameScreen = document.getElementById('screen-game');
-    if (gameScreen) {
-      gameScreen.addEventListener('touchstart', triggerJumpStart, { passive: false });
-      gameScreen.addEventListener('touchend', triggerJumpEnd, { passive: false });
-      gameScreen.addEventListener('touchcancel', triggerJumpEnd, { passive: false });
-    }
-
     window.addEventListener('keydown', (e) => {
       if (e.code === 'Space' || e.code === 'ArrowUp') {
         if (this.state === 'playing') {
           e.preventDefault();
-          if (!this.isPressing) triggerJumpStart();
+          if (!e.repeat) triggerJumpStart();
         }
       }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      if (e.code === 'Space' || e.code === 'ArrowUp') {
+        triggerJumpEnd();
+      }
+    });
 
       // Debug mode hotkeys to switch difficulty presets live on screen
       if (this.gameConfig.debug?.enabled) {
