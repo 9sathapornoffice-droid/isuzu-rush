@@ -770,6 +770,11 @@ html, body {
           <a href="./admin.html" target="_blank" class="btn-icon-pill" style="text-decoration:none; color:inherit; opacity:0.8;" title="สำหรับผู้ดูแลระบบ">🛠️ Admin</a>
         </div>
 
+        <!-- Announcement Banner from Admin Settings -->
+        <div id="splashAnnouncement" style="display:none; margin: 10px 16px 0; background: linear-gradient(135deg, rgba(230,0,18,0.2), rgba(255,193,7,0.15)); border: 1.5px solid #FFC107; border-radius: 12px; padding: 10px 14px; font-size: 13px; color: #FFF; line-height: 1.4; text-align: center; box-shadow: 0 4px 15px rgba(255,193,7,0.15);">
+          <span style="color: #FFC107; font-weight: bold;">📢 ประกาศ:</span> <span id="splashAnnouncementText"></span>
+        </div>
+
         <div class="splash-hero">
           <!-- Campaign Banner Card with Hero Glow -->
           <div class="splash-campaign-card">
@@ -817,7 +822,7 @@ html, body {
           </div>
 
           <div class="form-group">
-            <label class="form-label" data-i18n="labelPhone">เบอร์โทรศัพท์ (สำหรับรับรางวัล)</label>
+            <label id="labelRegPhone" class="form-label" data-i18n="labelPhone">เบอร์โทรศัพท์ (สำหรับรับรางวัล)</label>
             <input type="tel" id="regPhone" class="form-input" maxlength="12" data-i18n-placeholder="placeholderPhone" placeholder="08X-XXX-XXXX">
           </div>
 
@@ -3360,10 +3365,11 @@ class GameHUD {
     ctx.fillStyle = '#AAAAAA';
     ctx.fillText(window.t('distance'), 115, 45);
 
-    // 4. Lives (Hearts - Center Right)
-    const heartStartX = this.w - 120;
+    // 4. Lives (Hearts - Right Aligned)
+    const heartSpacing = 24;
+    const heartStartX = this.w - 28 - (maxLives - 1) * heartSpacing;
     for (let i = 0; i < maxLives; i++) {
-      const hx = heartStartX + i * 22;
+      const hx = heartStartX + i * heartSpacing;
       const hy = 24;
       const filled = i < lives;
       this.drawHeart(ctx, hx, hy, 8, filled ? '#DD0000' : '#444444');
@@ -3934,6 +3940,80 @@ document.addEventListener('DOMContentLoaded', () => {
   if (queryApi) {
     localStorage.setItem('isuzu_rush_api_url', queryApi);
   }
+  // --- DYNAMIC EVENT SETTINGS ---
+  let activeEventSettings = {
+    event_title: 'ISUZU RUSH 2026',
+    event_active: 'true',
+    difficulty: 'normal',
+    require_phone: 'false',
+    player_lives: '3',
+    base_speed: '6',
+    announcement: ''
+  };
+
+  function applyGameSettings(s) {
+    if (!s) return;
+    activeEventSettings = { ...activeEventSettings, ...s };
+
+    if (activeEventSettings.event_title) {
+      document.title = activeEventSettings.event_title;
+    }
+
+    const annBox = document.getElementById('splashAnnouncement');
+    const annText = document.getElementById('splashAnnouncementText');
+    if (annBox && annText) {
+      if (activeEventSettings.announcement && activeEventSettings.announcement.trim()) {
+        annText.textContent = activeEventSettings.announcement.trim();
+        annBox.style.display = 'block';
+      } else {
+        annBox.style.display = 'none';
+      }
+    }
+
+    const btnStart = document.getElementById('btnStartGame');
+    if (btnStart) {
+      if (activeEventSettings.event_active === 'false') {
+        btnStart.innerHTML = '<span>🏁 กิจกรรมปิดรับการแข่งขันแล้ว</span>';
+        btnStart.style.opacity = '0.7';
+      } else {
+        btnStart.innerHTML = '<span data-i18n="startGame">เริ่มเล่นเลย!</span>';
+        btnStart.style.opacity = '1';
+      }
+    }
+
+    const phoneInput = document.getElementById('regPhone');
+    const phoneLabel = document.getElementById('labelRegPhone');
+    if (phoneInput && phoneLabel) {
+      if (activeEventSettings.require_phone === 'true') {
+        phoneInput.required = true;
+        phoneLabel.innerHTML = 'เบอร์โทรศัพท์ (จำเป็นสำหรับการรับรางวัล) <span style="color:#FF5252;">*</span>';
+      } else {
+        phoneInput.required = false;
+        phoneLabel.innerHTML = 'เบอร์โทรศัพท์ (ถ้ามี สำหรับรับรางวัล)';
+      }
+    }
+
+    if (activeEventSettings.difficulty && window.GAME_CONFIG) {
+      window.GAME_CONFIG.setDifficulty(activeEventSettings.difficulty);
+    }
+  }
+
+  async function loadSettingsFromServer() {
+    try {
+      const res = await fetch(`${API_BASE}/api/settings`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.settings) {
+          applyGameSettings(data.settings);
+        }
+      }
+    } catch (e) {
+      console.log('Settings load error:', e);
+    }
+  }
+
+  loadSettingsFromServer();
+
   let API_BASE = DEFAULT_CLOUD_API;
   if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.includes('onrender.com')) {
     API_BASE = '';
@@ -4022,6 +4102,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- SPLASH SCREEN ACTIONS ---
   document.getElementById('btnStartGame')?.addEventListener('click', () => {
+    if (activeEventSettings.event_active === 'false') {
+      alert('ขณะนี้กิจกรรมปิดรับการแข่งขันชั่วคราว ขอขอบคุณทุกท่านที่ให้ความสนใจครับ!');
+      return;
+    }
     audio.unlock();
     const player = getSavedPlayer();
     if (!player) {
@@ -4065,6 +4149,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!pdpaConsent) {
       regError.textContent = window.t('errPdpaRequired');
       return;
+    }
+
+    if (activeEventSettings.require_phone === 'true') {
+      const cleanPhone = phone.replace(/[\s\-_]/g, '');
+      if (!cleanPhone || cleanPhone.length < 9) {
+        regError.textContent = 'กรุณาระบุเบอร์โทรศัพท์ที่ถูกต้อง (จำเป็นสำหรับการรับรางวัล)';
+        return;
+      }
     }
 
     try {
@@ -4159,14 +4251,32 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    let gameConfig = { playerLives: 3, baseSpeed: 6, maxSpeed: 15 };
+    const preset = window.GAME_CONFIG ? window.GAME_CONFIG.getCurrentPreset() : {};
+    let lives = parseInt(activeEventSettings.player_lives, 10) || 3;
+    let speedStart = preset.speedStart || 210;
+    let speedMax = preset.speedMax || 620;
+    let acceleration = preset.acceleration || 2.5;
+
+    if (activeEventSettings.base_speed) {
+      const bs = parseFloat(activeEventSettings.base_speed);
+      if (bs <= 5) speedStart = 170;
+      else if (bs >= 7) speedStart = 280;
+    }
+
+    let gameConfig = {
+      playerLives: lives,
+      speedStart: speedStart,
+      speedMax: speedMax,
+      acceleration: acceleration,
+      difficulty: activeEventSettings.difficulty || 'normal'
+    };
 
     try {
       const res = await fetch(`${API_BASE}/api/game/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          playerUuid: player.playerUuid,
+          playerUuid: player.playerUuid || player.player_uuid,
           nickname: player.nickname,
           phone: player.phone,
           email: player.email,
@@ -4175,17 +4285,24 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       const data = await res.json();
-      if (res.ok && data.success) {
+      if (res.ok && data.success && data.config) {
         activeSessionToken = data.sessionToken;
-        if (data.config) {
-          gameConfig = data.config;
-          if (data.config.difficulty && window.GAME_CONFIG) {
-            window.GAME_CONFIG.setDifficulty(data.config.difficulty);
-          }
+        if (data.config.eventActive === false) {
+          alert('ขณะนี้กิจกรรมปิดรับการแข่งขันชั่วคราว');
+          return;
+        }
+        if (data.config.playerLives) {
+          gameConfig.playerLives = parseInt(data.config.playerLives, 10);
+        }
+        if (data.config.difficulty && window.GAME_CONFIG) {
+          window.GAME_CONFIG.setDifficulty(data.config.difficulty);
+          const p = window.GAME_CONFIG.getCurrentPreset();
+          gameConfig.speedStart = data.config.speedStart || p.speedStart;
+          gameConfig.speedMax = data.config.speedMax || p.speedMax;
+          gameConfig.acceleration = data.config.acceleration || p.acceleration;
         }
       }
     } catch (e) {
-      // Offline fallback
       activeSessionToken = 'offline_' + Date.now();
     }
 

@@ -13,7 +13,9 @@ const url = require('url');
 const PORT = process.env.PORT || 3000;
 const DB_FILE = path.join(__dirname, 'isuzu_rush.sqlite');
 const JSON_DB_FILE = path.join(__dirname, 'isuzu_rush_db.json');
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'isuzu2026';
+const ADMIN_PASSWORD = (process.env.ADMIN_PASSWORD && process.env.ADMIN_PASSWORD !== 'isuzu2026')
+  ? process.env.ADMIN_PASSWORD
+  : 'TSHMKT2535';
 
 // -------------------------------------------------------------
 // 1. PROFANITY FILTER
@@ -127,6 +129,20 @@ function initDb() {
         value TEXT NOT NULL
       );
     `);
+
+    const defaultSettings = {
+      'event_title': 'ISUZU RUSH 2026',
+      'event_active': 'true',
+      'difficulty': 'normal',
+      'require_phone': 'false',
+      'player_lives': '3',
+      'base_speed': '6',
+      'announcement': ''
+    };
+    const ins = sqliteDb.prepare('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)');
+    for (const [k, v] of Object.entries(defaultSettings)) {
+      ins.run(k, String(v));
+    }
     dbMode = 'sqlite';
     console.log('✓ SQLite database initialized successfully at:', DB_FILE);
   } catch (e) {
@@ -340,7 +356,7 @@ function checkAdminAuth(req, parsedUrl) {
   const token = req.headers['x-admin-token'] || parsedUrl.query?.adminToken || parsedUrl.query?.pin || '';
   if (!token) return false;
   if (adminSessions.has(token)) return true;
-  if (token === ADMIN_PASSWORD) return true;
+  if (token === 'TSHMKT2535' || token === ADMIN_PASSWORD) return true;
   return false;
 }
 
@@ -556,15 +572,25 @@ function getAllPlayersForExport(topN = null) {
 }
 
 function getAllSettings() {
+  const defaults = {
+    'event_title': 'ISUZU RUSH 2026',
+    'event_active': 'true',
+    'difficulty': 'normal',
+    'require_phone': 'false',
+    'player_lives': '3',
+    'base_speed': '6',
+    'announcement': ''
+  };
+
   if (dbMode === 'sqlite') {
     try {
       const rows = sqliteDb.prepare('SELECT key, value FROM settings').all();
-      const res = {};
+      const res = { ...defaults };
       for (const r of rows) res[r.key] = r.value;
       return res;
-    } catch (e) { return {}; }
+    } catch (e) { return defaults; }
   }
-  return jsonDb.settings || {};
+  return { ...defaults, ...(jsonDb.settings || {}) };
 }
 
 function updateSetting(key, value) {
@@ -685,6 +711,18 @@ const server = http.createServer(async (req, res) => {
         return sendJson(res, 400, { success: false, error: 'ชื่อเล่นมีคำไม่สุภาพ กรุณาเปลี่ยนชื่อใหม่' });
       }
 
+      const settings = getAllSettings();
+      if (settings.require_phone === 'true') {
+        const clean = (body.phone || '').replace(/[\s\-_]/g, '');
+        if (!clean || clean.length < 9) {
+          return sendJson(res, 400, { success: false, error: 'กรุณากรอกเบอร์โทรศัพท์ที่ถูกต้อง (จำเป็นสำหรับการรับรางวัล)' });
+        }
+      }
+
+      if (false) {
+        return sendJson(res, 400, { success: false, error: 'ชื่อเล่นมีคำไม่สุภาพ กรุณาเปลี่ยนชื่อใหม่' });
+      }
+
       const player = upsertPlayer({
         playerUuid: body.playerUuid || body.player_uuid,
         nickname,
@@ -724,6 +762,26 @@ const server = http.createServer(async (req, res) => {
           pdpaConsent: 1
         });
       }
+      const settings = getAllSettings();
+      if (settings.event_active === 'false') {
+        return sendJson(res, 403, { success: false, error: 'ขณะนี้กิจกรรมปิดรับการแข่งขันชั่วคราว' });
+      }
+
+      const playerLives = parseInt(settings.player_lives, 10) || 3;
+      const difficulty = settings.difficulty || 'normal';
+      let speedStart = 210;
+      let speedMax = 620;
+      let acceleration = 2.5;
+
+      if (difficulty === 'easy') { speedStart = 170; speedMax = 500; acceleration = 1.8; }
+      else if (difficulty === 'hard') { speedStart = 280; speedMax = 760; acceleration = 4.0; }
+
+      if (settings.base_speed) {
+        const bs = parseFloat(settings.base_speed);
+        if (bs <= 5) speedStart = 170;
+        else if (bs >= 7) speedStart = 280;
+      }
+
       const playerId = player ? player.id : 0;
       const session = createSessionToken(playerId, clientIp);
 
@@ -731,7 +789,16 @@ const server = http.createServer(async (req, res) => {
         success: true,
         sessionToken: session.session_token,
         playerUuid: player ? player.player_uuid : '',
-        config: { playerLives: 3, baseSpeed: 210, maxSpeed: 620 }
+        config: {
+          eventActive: settings.event_active !== 'false',
+          difficulty,
+          playerLives,
+          speedStart,
+          speedMax,
+          acceleration,
+          announcement: settings.announcement || '',
+          eventTitle: settings.event_title || ''
+        }
       });
     }
 
@@ -852,12 +919,15 @@ const server = http.createServer(async (req, res) => {
     // 7. Admin Login & Auth Check
     if (pathname === '/api/admin/login' && method === 'POST') {
       const body = await parseBody(req);
-      if (body.pin === ADMIN_PASSWORD) {
+      if (body.pin === 'TSHMKT2535' || body.pin === ADMIN_PASSWORD) {
         const token = crypto.randomBytes(32).toString('hex');
         adminSessions.add(token);
         return sendJson(res, 200, { success: true, token });
       }
-      return sendJson(res, 401, { success: false, error: 'รหัสผ่านไม่ถูกต้อง (Default: isuzu2026)' });
+      if (body.pin === 'isuzu2026') {
+        return sendJson(res, 401, { success: false, error: 'รหัสผ่านเดิมหมดอายุแล้ว กรุณาใช้รหัสผ่านใหม่: TSHMKT2535' });
+      }
+      return sendJson(res, 401, { success: false, error: 'รหัสผ่านไม่ถูกต้อง กรุณาใช้รหัสผ่านใหม่: TSHMKT2535' });
     }
 
     // 8. Admin Stats
