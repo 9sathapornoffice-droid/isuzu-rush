@@ -924,10 +924,7 @@ const server = http.createServer(async (req, res) => {
         adminSessions.add(token);
         return sendJson(res, 200, { success: true, token });
       }
-      if (body.pin === 'isuzu2026') {
-        return sendJson(res, 401, { success: false, error: 'รหัสผ่านเดิมหมดอายุแล้ว กรุณาใช้รหัสผ่านใหม่: TSHMKT2535' });
-      }
-      return sendJson(res, 401, { success: false, error: 'รหัสผ่านไม่ถูกต้อง กรุณาใช้รหัสผ่านใหม่: TSHMKT2535' });
+      return sendJson(res, 401, { success: false, error: 'รหัสผ่านไม่ถูกต้อง' });
     }
 
     // 8. Admin Stats
