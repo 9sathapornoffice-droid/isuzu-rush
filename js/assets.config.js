@@ -86,33 +86,33 @@ window.ASSETS_CONFIG = {
   obstacles: {
     cone: {
       src: './assets/obstacles/cone.svg',
-      width: 26,
-      height: 34
+      width: 36,
+      height: 48
     },
     toolbox: {
       src: './assets/obstacles/toolbox.svg',
-      width: 38,
-      height: 28
+      width: 52,
+      height: 38
     },
     tire: {
       src: './assets/obstacles/tire.svg',
-      width: 34,
-      height: 34
+      width: 48,
+      height: 48
     },
     rock: {
       src: './assets/obstacles/rock.svg',
-      width: 36,
-      height: 26
+      width: 48,
+      height: 35
     },
     pothole: {
       src: './assets/obstacles/pothole.svg',
-      width: 46,
-      height: 16
+      width: 60,
+      height: 22
     },
     truck: {
       src: './assets/vehicles/truck_obstacle.svg',
-      width: 105,
-      height: 48,
+      width: 148,
+      height: 68,
       isLarge: true
     }
   }

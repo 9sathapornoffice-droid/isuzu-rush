@@ -4,6 +4,16 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
+  const DEFAULT_CLOUD_API = 'https://isuzu-rush-1.onrender.com';
+  const urlParams = new URLSearchParams(window.location.search);
+  const customApi = urlParams.get('api') || localStorage.getItem('isuzu_rush_api_url');
+  let API_BASE = DEFAULT_CLOUD_API;
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.includes('onrender.com')) {
+    API_BASE = '';
+  } else if (customApi) {
+    API_BASE = customApi;
+  }
+
   let adminToken = sessionStorage.getItem('isuzu_admin_token') || '';
   let currentPage = 1;
   let currentSearch = '';
@@ -40,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const pin = document.getElementById('adminPinInput').value.trim();
 
     try {
-      const res = await fetch('/api/admin/login', {
+      const res = await fetch(`${API_BASE}/api/admin/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pin })
@@ -48,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const data = await res.json();
       if (!res.ok || !data.success) {
-        loginError.textContent = data.error || 'Invalid PIN';
+        loginError.textContent = data.error || 'รหัส PIN ไม่ถูกต้อง';
         return;
       }
 
@@ -56,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
       sessionStorage.setItem('isuzu_admin_token', adminToken);
       showDashboard();
     } catch (err) {
-      loginError.textContent = 'Server connection failed';
+      loginError.textContent = 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้';
     }
   });
 
@@ -69,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- STATS & HOURLY CHART ---
   async function loadStats() {
     try {
-      const res = await fetch('/api/admin/stats', {
+      const res = await fetch(`${API_BASE}/api/admin/stats`, {
         headers: { 'X-Admin-Token': adminToken }
       });
       const data = await res.json();
@@ -79,10 +89,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const s = data.stats;
-      document.getElementById('statTotalPlayers').textContent = s.totalPlayers.toLocaleString();
-      document.getElementById('statTotalPlays').textContent = s.totalPlays.toLocaleString();
-      document.getElementById('statPlaysToday').textContent = s.playsToday.toLocaleString();
-      document.getElementById('statAvgTime').textContent = `${s.avgPlayTimeSeconds}s`;
+      document.getElementById('statTotalPlayers').textContent = (s.totalPlayers || 0).toLocaleString();
+      document.getElementById('statTotalPlays').textContent = (s.totalPlays || 0).toLocaleString();
+      document.getElementById('statPlaysToday').textContent = (s.playsToday || 0).toLocaleString();
+      document.getElementById('statAvgTime').textContent = `${s.avgPlayTimeSeconds || 0}s`;
 
       renderHourlyChart(s.hourly);
       renderSourceStats(s.sourceStats);
@@ -117,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderSourceStats(sourceStats) {
     const container = document.getElementById('sourceStatsContainer');
     if (!sourceStats || sourceStats.length === 0) {
-      container.innerHTML = '<div style="color:#888;">ไม่มีข้อมูลแหล่งที่มา</div>';
+      container.innerHTML = '<div style="color:#888; text-align:center; padding:20px;">ไม่มีข้อมูลแหล่งที่มา</div>';
       return;
     }
 
@@ -136,35 +146,42 @@ document.addEventListener('DOMContentLoaded', () => {
     const tbody = document.getElementById('adminPlayersTableBody');
 
     try {
-      const res = await fetch(`/api/admin/players?page=${page}&search=${encodeURIComponent(search)}`, {
+      const res = await fetch(`${API_BASE}/api/admin/players?page=${page}&search=${encodeURIComponent(search)}`, {
         headers: { 'X-Admin-Token': adminToken }
       });
       const data = await res.json();
       if (!res.ok || !data.success) return;
 
       if (!data.players || data.players.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#888; padding:20px;">ไม่พบข้อมูลผู้เล่น</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10" style="text-align:center; color:#888; padding:30px;">ไม่พบข้อมูลผู้เล่นที่ตรงกับเงื่อนไข</td></tr>`;
         return;
       }
 
-      tbody.innerHTML = data.players.map(p => `
+      tbody.innerHTML = data.players.map(p => {
+        const medal = p.rank === 1 ? '🥇 อันดับ 1' : p.rank === 2 ? '🥈 อันดับ 2' : p.rank === 3 ? '🥉 อันดับ 3' : `#${p.rank}`;
+        const lastPlayText = p.last_played 
+          ? new Date(p.last_played).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' }) 
+          : (p.created_at ? new Date(p.created_at).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' }) : '-');
+        return `
         <tr class="${p.is_banned ? 'row-banned' : ''}">
-          <td>#${p.id}</td>
+          <td style="text-align:center;"><strong style="font-size:14px; color:${p.rank <= 3 ? '#FFD700' : '#FFF'}">${medal}</strong></td>
           <td><strong>${escapeHtml(p.nickname)}</strong></td>
-          <td>${p.phone || '-'}</td>
-          <td><span class="score-badge">${(p.high_score || 0).toLocaleString()}</span></td>
-          <td>${p.best_distance ? p.best_distance + ' ม.' : '-'}</td>
-          <td>${p.games_played || 0}</td>
-          <td><span class="tag-source">${p.source || 'direct'}</span></td>
-          <td>
+          <td>${p.phone ? `<a href="tel:${escapeHtml(p.phone)}" style="color:#00D26A; text-decoration:none; font-weight:600;">📞 ${escapeHtml(p.phone)}</a>` : '<span style="color:#666;">-</span>'}</td>
+          <td>${p.email ? `<span style="color:#8F95A3;">${escapeHtml(p.email)}</span>` : '<span style="color:#666;">-</span>'}</td>
+          <td style="text-align:right;"><span class="score-badge">${(p.high_score || 0).toLocaleString()}</span></td>
+          <td style="text-align:right;">${p.best_distance ? p.best_distance.toLocaleString() + ' ม.' : '-'}</td>
+          <td style="text-align:center;">${p.games_played || 0}</td>
+          <td style="font-size:12px; color:#8F95A3;">${lastPlayText}</td>
+          <td style="text-align:center;"><span class="tag-source">${escapeHtml(p.source || 'direct')}</span></td>
+          <td style="text-align:center;">
             <button class="btn-action ${p.is_banned ? 'btn-unban' : 'btn-ban'}" onclick="toggleBan(${p.id}, ${p.is_banned ? 0 : 1})">
               ${p.is_banned ? 'ปลดแบน' : 'แบน'}
             </button>
           </td>
         </tr>
-      `).join('');
+      `}).join('');
 
-      document.getElementById('adminPageInfo').textContent = `หน้า ${data.page} จาก ${data.totalPages || 1}`;
+      document.getElementById('adminPageInfo').textContent = `หน้า ${data.page} จาก ${data.totalPages || 1} (รวมทั้งหมด ${data.total || 0} คน)`;
       document.getElementById('btnPrevPage').disabled = data.page <= 1;
       document.getElementById('btnNextPage').disabled = data.page >= data.totalPages;
     } catch (e) {
@@ -176,7 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!confirm(`คุณต้องการ ${shouldBan ? 'แบน' : 'ปลดแบน'} ผู้เล่น ID #${playerId} ใช่หรือไม่?`)) return;
 
     try {
-      const res = await fetch('/api/admin/player/ban', {
+      const res = await fetch(`${API_BASE}/api/admin/player/ban`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -188,12 +205,16 @@ document.addEventListener('DOMContentLoaded', () => {
         loadPlayers(currentPage, currentSearch);
       }
     } catch (e) {
-      alert('Error updating ban status');
+      alert('เกิดข้อผิดพลาดในการอัปเดตสถานะ');
     }
   };
 
+  let searchTimeout = null;
   document.getElementById('adminSearchInput')?.addEventListener('input', (e) => {
-    loadPlayers(1, e.target.value.trim());
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      loadPlayers(1, e.target.value.trim());
+    }, 250);
   });
 
   document.getElementById('btnPrevPage')?.addEventListener('click', () => {
@@ -204,19 +225,32 @@ document.addEventListener('DOMContentLoaded', () => {
     loadPlayers(currentPage + 1, currentSearch);
   });
 
+  // --- REAL-TIME POLLING & MANUAL REFRESH ---
+  let adminRefreshInterval = setInterval(() => {
+    if (adminToken && mainContent && mainContent.style.display !== 'none') {
+      loadStats();
+      loadPlayers(currentPage, currentSearch);
+    }
+  }, 5000);
+
+  document.getElementById('btnManualRefresh')?.addEventListener('click', () => {
+    loadStats();
+    loadPlayers(currentPage, currentSearch);
+  });
+
   // --- CSV EXPORT ---
   document.getElementById('btnExportTop50')?.addEventListener('click', () => {
-    window.location.href = `/api/admin/export-csv?topN=50&adminToken=${adminToken}`;
+    window.location.href = `${API_BASE}/api/admin/export-csv?topN=50&adminToken=${encodeURIComponent(adminToken)}`;
   });
 
   document.getElementById('btnExportAll')?.addEventListener('click', () => {
-    window.location.href = `/api/admin/export-csv?adminToken=${adminToken}`;
+    window.location.href = `${API_BASE}/api/admin/export-csv?adminToken=${encodeURIComponent(adminToken)}`;
   });
 
   // --- GAME CONFIG SETTINGS ---
   async function loadSettings() {
     try {
-      const res = await fetch('/api/settings');
+      const res = await fetch(`${API_BASE}/api/settings`);
       const data = await res.json();
       if (!res.ok || !data.success) return;
 
@@ -246,7 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     try {
-      const res = await fetch('/api/admin/settings', {
+      const res = await fetch(`${API_BASE}/api/admin/settings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -255,7 +289,8 @@ document.addEventListener('DOMContentLoaded', () => {
         body: JSON.stringify({ settings })
       });
       if (res.ok) {
-        alert('บันทึกการตั้งค่าเรียบร้อยแล้ว!');
+        alert('✅ บันทึกการตั้งค่ากิจกรรมเรียบร้อยแล้ว!\nมีผลกับผู้เล่นทุกคนทันที');
+        loadSettings();
       }
     } catch (e) {
       alert('บันทึกการตั้งค่าล้มเหลว');
@@ -268,7 +303,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (code !== 'RESET') return;
 
     try {
-      const res = await fetch('/api/admin/reset-leaderboard', {
+      const res = await fetch(`${API_BASE}/api/admin/reset-leaderboard`, {
         method: 'POST',
         headers: { 'X-Admin-Token': adminToken }
       });

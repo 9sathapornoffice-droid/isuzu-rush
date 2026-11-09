@@ -72,7 +72,10 @@ for (const jsRel of jsFiles) {
 }
 
 // 4. Read HTML and replace CSS link and Script tags with inlined content
-let html = fs.readFileSync(path.join(PUBLIC_DIR, 'index.html'), 'utf-8');
+const templatePath = fs.existsSync(path.join(PUBLIC_DIR, 'index.template.html'))
+  ? path.join(PUBLIC_DIR, 'index.template.html')
+  : path.join(PUBLIC_DIR, 'index.html');
+let html = fs.readFileSync(templatePath, 'utf-8');
 
 // Replace asset paths in HTML
 for (const [relPath, dataUri] of Object.entries(assetMap)) {
@@ -99,3 +102,34 @@ fs.writeFileSync(path.join(PUBLIC_DIR, 'index.html'), html, 'utf-8');
 
 const sizeKb = Math.round(fs.statSync(path.join(ROOT_DIR, 'index.html')).size / 1024);
 console.log(`✓ Standalone bundled index.html successfully created! Size: ${sizeKb} KB`);
+
+// 6. Bundle admin.html into a standalone single-file admin page
+console.log('Bundling Admin Dashboard into standalone admin.html...');
+const adminHtmlPath = path.join(PUBLIC_DIR, 'admin.html');
+if (fs.existsSync(adminHtmlPath)) {
+  let adminHtml = fs.readFileSync(adminHtmlPath, 'utf-8');
+  let adminCss = fs.readFileSync(path.join(PUBLIC_DIR, 'css', 'admin.css'), 'utf-8');
+  let adminJs = fs.readFileSync(path.join(PUBLIC_DIR, 'js', 'admin.js'), 'utf-8');
+
+  // Replace assets in adminHtml
+  for (const [relPath, dataUri] of Object.entries(assetMap)) {
+    adminHtml = adminHtml.split(`"${relPath}"`).join(`"${dataUri}"`);
+    adminHtml = adminHtml.split(`'${relPath}'`).join(`'${dataUri}'`);
+  }
+
+  // Replace css link
+  adminHtml = adminHtml.replace(
+    /<link rel="stylesheet" href="\.\/css\/admin\.css">/,
+    `<style>\n${adminCss}\n</style>`
+  );
+
+  // Replace js script
+  adminHtml = adminHtml.replace(
+    /<script src="\.\/js\/admin\.js"><\/script>/,
+    `<script>\n${adminJs}\n</script>`
+  );
+
+  fs.writeFileSync(path.join(ROOT_DIR, 'admin.html'), adminHtml, 'utf-8');
+  const adminSizeKb = Math.round(fs.statSync(path.join(ROOT_DIR, 'admin.html')).size / 1024);
+  console.log(`✓ Standalone bundled admin.html created! Size: ${adminSizeKb} KB`);
+}

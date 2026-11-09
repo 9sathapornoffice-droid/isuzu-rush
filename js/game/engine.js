@@ -50,6 +50,7 @@ class RunnerGame {
     this.playTimeSec = 0;
     this.startTime = 0;
     this.playerLives = this.assetsConfig.gameplay?.startingLives || 3;
+    this.onPauseStateChange = null;
 
     // Input state
     this.isPressing = false;
@@ -66,39 +67,82 @@ class RunnerGame {
 
   setupResize() {
     const handleResize = () => {
-      const dpr = window.devicePixelRatio || 1;
-      this.canvas.width = this.virtualWidth * dpr;
-      this.canvas.height = this.virtualHeight * dpr;
+      const parent = this.canvas.parentElement;
+      const rect = parent ? parent.getBoundingClientRect() : this.canvas.getBoundingClientRect();
+      const clientW = Math.max(320, rect.width || window.innerWidth);
+      const clientH = Math.max(480, rect.height || window.innerHeight);
+
+      // Measure safe area top on device (iOS notch/dynamic island, Android punch-hole)
+      let safeTop = 0;
+      if (typeof window !== 'undefined' && document.body) {
+        const testDiv = document.createElement('div');
+        testDiv.style.cssText = 'position:fixed;top:0;left:0;height:env(safe-area-inset-top, 0px);visibility:hidden;pointer-events:none;z-index:-1;';
+        document.body.appendChild(testDiv);
+        const rawSafeTop = testDiv.offsetHeight || 0;
+        document.body.removeChild(testDiv);
+        safeTop = Math.round(rawSafeTop * (360 / clientW));
+      }
+
+      // Responsive aspect ratio: Fixed 360 width, scale virtualHeight to exact screen ratio
+      this.virtualWidth = 360;
+      const targetAspect = clientH / clientW;
+      this.virtualHeight = Math.max(540, Math.round(360 * targetAspect));
+      this.roadY = this.virtualHeight - 120;
+
+      const dpr = Math.min(window.devicePixelRatio || 1, 3);
+      this.canvas.width = Math.round(this.virtualWidth * dpr);
+      this.canvas.height = Math.round(this.virtualHeight * dpr);
+      this.ctx.setTransform(1, 0, 0, 1, 0, 0);
       this.ctx.scale(dpr, dpr);
 
       this.canvas.style.width = '100%';
       this.canvas.style.height = '100%';
+
+      // Propagate resize to all subsystems
+      if (this.background) this.background.resize(this.virtualWidth, this.virtualHeight, this.roadY);
+      if (this.player) this.player.resize(this.roadY);
+      if (this.obstacles) this.obstacles.resize(this.virtualWidth, this.roadY);
+      if (this.items) this.items.resize(this.virtualWidth, this.roadY);
+      if (this.hud) this.hud.resize(this.virtualWidth, this.virtualHeight, safeTop);
     };
 
     window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', () => {
+      setTimeout(handleResize, 150);
+    });
     handleResize();
   }
 
   bindInputs() {
+    let lastTouchStartTime = 0;
+
     const triggerJumpStart = (e) => {
       if (this.state !== 'playing') return;
       if (e) {
-        e.preventDefault();
-        e.stopPropagation();
+        if (e.target && e.target.closest && e.target.closest('.btn-ingame') || e.target.closest('.pause-modal-overlay')) return;
+        if (e.cancelable) e.preventDefault();
+        if (e.stopPropagation) e.stopPropagation();
       }
+
+      // Debounce micro touch bounces (< 45ms)
+      const now = performance.now();
+      if (now - lastTouchStartTime < 45) return;
+      lastTouchStartTime = now;
+
       this.isPressing = true;
       this.player.startJump();
     };
 
     const triggerJumpEnd = (e) => {
       if (e) {
-        e.preventDefault();
-        e.stopPropagation();
+        if (e.cancelable) e.preventDefault();
+        if (e.stopPropagation) e.stopPropagation();
       }
       this.isPressing = false;
       this.player.releaseJump();
     };
 
+    // Attach to canvas exclusively with stopPropagation to ensure single, crisp tap delivery
     this.canvas.addEventListener('touchstart', triggerJumpStart, { passive: false });
     this.canvas.addEventListener('touchend', triggerJumpEnd, { passive: false });
     this.canvas.addEventListener('touchcancel', triggerJumpEnd, { passive: false });
@@ -106,11 +150,20 @@ class RunnerGame {
     this.canvas.addEventListener('mousedown', triggerJumpStart);
     this.canvas.addEventListener('mouseup', triggerJumpEnd);
 
+    // Keyboard support
     window.addEventListener('keydown', (e) => {
+      if (e.code === 'KeyP' || e.code === 'Escape') {
+        if (this.state === 'playing' || this.state === 'paused') {
+          e.preventDefault();
+          this.togglePause();
+          return;
+        }
+      }
+
       if (e.code === 'Space' || e.code === 'ArrowUp') {
         if (this.state === 'playing') {
           e.preventDefault();
-          if (!this.isPressing) triggerJumpStart();
+          if (!e.repeat) triggerJumpStart();
         }
       }
 
@@ -182,11 +235,35 @@ class RunnerGame {
     if (this.state === 'playing') {
       this.state = 'paused';
       this.audio.stopBGM();
-    } else if (this.state === 'paused') {
+      if (this.onPauseStateChange) this.onPauseStateChange(true);
+    }
+  }
+
+  resume() {
+    if (this.state === 'paused') {
       this.state = 'playing';
       this.audio.startBGM();
       this.lastTime = performance.now();
+      if (this.onPauseStateChange) this.onPauseStateChange(false);
     }
+  }
+
+  togglePause() {
+    if (this.state === 'playing') {
+      this.pause();
+    } else if (this.state === 'paused') {
+      this.resume();
+    }
+  }
+
+  stop() {
+    this.state = 'stopped';
+    this.audio.stopBGM();
+    if (this.animFrameId) {
+      cancelAnimationFrame(this.animFrameId);
+      this.animFrameId = null;
+    }
+    if (this.onPauseStateChange) this.onPauseStateChange(false);
   }
 
   gameOver() {

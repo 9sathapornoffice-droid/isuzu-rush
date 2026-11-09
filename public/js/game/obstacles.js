@@ -171,10 +171,10 @@ class ObstacleManager {
       if (obs.hit) continue;
 
       const obsHitbox = {
-        x: obs.x + (obs.type === 'truck' ? 12 : 4),
-        y: obs.y + 4,
-        width: obs.width - (obs.type === 'truck' ? 24 : 8),
-        height: obs.height - 6
+        x: obs.x + (obs.type === 'truck' ? 18 : 6),
+        y: obs.y + 6,
+        width: obs.width - (obs.type === 'truck' ? 36 : 12),
+        height: obs.height - 8
       };
 
       if (

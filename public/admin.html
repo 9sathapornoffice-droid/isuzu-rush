@@ -13,7 +13,7 @@
     <div class="login-card">
       <img src="./assets/images/logo.svg" style="width:200px; margin-bottom:16px;" alt="ISUZU RUSH">
       <h2>ผู้ดูแลระบบกิจกรรม</h2>
-      <p>กรุณาระบุรหัส PIN เพื่อเข้าสู่แผงควบคุม (เริ่มต้น: isuzu2026)</p>
+      <p>กรุณาระบุรหัส PIN เพื่อเข้าสู่แผงควบคุม</p>
       <form id="adminLoginForm">
         <input type="password" id="adminPinInput" class="login-input" placeholder="••••••••" required autofocus>
         <div id="adminLoginError" style="color:#FF5252; font-size:13px; margin-bottom:12px; min-height:18px;"></div>
@@ -84,6 +84,9 @@
           <h3 class="section-title">🏆 จัดการรายชื่อผู้เล่น & คะแนน</h3>
           <div class="table-toolbar">
             <input type="text" id="adminSearchInput" class="search-input" placeholder="🔍 ค้นหาชื่อเล่น หรือเบอร์...">
+            <button id="btnManualRefresh" class="btn-admin" style="background:#0088FF; padding:8px 14px; font-size:13px;">
+              🔄 รีเฟรชข้อมูลสด
+            </button>
             <button id="btnExportTop50" class="btn-admin" style="background:#2C3E50; padding:8px 14px; font-size:13px;">
               📥 Export Top 50 (CSV)
             </button>
@@ -97,14 +100,16 @@
           <table class="admin-table">
             <thead>
               <tr>
-                <th>ID</th>
+                <th style="width:90px; text-align:center;">อันดับ</th>
                 <th>ชื่อเล่น</th>
-                <th>เบอร์โทร</th>
-                <th>คะแนนสูงสุด</th>
-                <th>ระยะทาง</th>
-                <th>เล่นสะสม</th>
-                <th>ช่องทาง</th>
-                <th>การจัดการ</th>
+                <th>เบอร์โทรศัพท์</th>
+                <th>อีเมล</th>
+                <th style="text-align:right;">คะแนนสูงสุด</th>
+                <th style="text-align:right;">ระยะทาง</th>
+                <th style="text-align:center;">รอบเล่น</th>
+                <th>เล่นล่าสุด</th>
+                <th style="text-align:center;">ช่องทาง</th>
+                <th style="text-align:center;">การจัดการ</th>
               </tr>
             </thead>
             <tbody id="adminPlayersTableBody">

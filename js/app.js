@@ -44,9 +44,86 @@ document.addEventListener('DOMContentLoaded', () => {
   if (queryApi) {
     localStorage.setItem('isuzu_rush_api_url', queryApi);
   }
-  const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-    ? ''
-    : (localStorage.getItem('isuzu_rush_api_url') || DEFAULT_CLOUD_API);
+  // --- DYNAMIC EVENT SETTINGS ---
+  let activeEventSettings = {
+    event_title: 'ISUZU RUSH 2026',
+    event_active: 'true',
+    difficulty: 'normal',
+    require_phone: 'false',
+    player_lives: '3',
+    base_speed: '6',
+    announcement: ''
+  };
+
+  function applyGameSettings(s) {
+    if (!s) return;
+    activeEventSettings = { ...activeEventSettings, ...s };
+
+    if (activeEventSettings.event_title) {
+      document.title = activeEventSettings.event_title;
+    }
+
+    const annBox = document.getElementById('splashAnnouncement');
+    const annText = document.getElementById('splashAnnouncementText');
+    if (annBox && annText) {
+      if (activeEventSettings.announcement && activeEventSettings.announcement.trim()) {
+        annText.textContent = activeEventSettings.announcement.trim();
+        annBox.style.display = 'block';
+      } else {
+        annBox.style.display = 'none';
+      }
+    }
+
+    const btnStart = document.getElementById('btnStartGame');
+    if (btnStart) {
+      if (activeEventSettings.event_active === 'false') {
+        btnStart.innerHTML = '<span>🏁 กิจกรรมปิดรับการแข่งขันแล้ว</span>';
+        btnStart.style.opacity = '0.7';
+      } else {
+        btnStart.innerHTML = '<span data-i18n="startGame">เริ่มเล่นเลย!</span>';
+        btnStart.style.opacity = '1';
+      }
+    }
+
+    const phoneInput = document.getElementById('regPhone');
+    const phoneLabel = document.getElementById('labelRegPhone');
+    if (phoneInput && phoneLabel) {
+      if (activeEventSettings.require_phone === 'true') {
+        phoneInput.required = true;
+        phoneLabel.innerHTML = 'เบอร์โทรศัพท์ (จำเป็นสำหรับการรับรางวัล) <span style="color:#FF5252;">*</span>';
+      } else {
+        phoneInput.required = false;
+        phoneLabel.innerHTML = 'เบอร์โทรศัพท์ (ถ้ามี สำหรับรับรางวัล)';
+      }
+    }
+
+    if (activeEventSettings.difficulty && window.GAME_CONFIG) {
+      window.GAME_CONFIG.setDifficulty(activeEventSettings.difficulty);
+    }
+  }
+
+  async function loadSettingsFromServer() {
+    try {
+      const res = await fetch(`${API_BASE}/api/settings`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.settings) {
+          applyGameSettings(data.settings);
+        }
+      }
+    } catch (e) {
+      console.log('Settings load error:', e);
+    }
+  }
+
+  loadSettingsFromServer();
+
+  let API_BASE = DEFAULT_CLOUD_API;
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.includes('onrender.com')) {
+    API_BASE = '';
+  } else if (localStorage.getItem('isuzu_rush_api_url')) {
+    API_BASE = localStorage.getItem('isuzu_rush_api_url');
+  }
 
   // Initialize Language
   window.setLanguage(window.getLanguage());
@@ -55,18 +132,35 @@ document.addEventListener('DOMContentLoaded', () => {
   function getSavedPlayer() {
     try {
       const data = localStorage.getItem('isuzu_rush_player');
-      return data ? JSON.parse(data) : null;
+      if (!data) return null;
+      const p = JSON.parse(data);
+      if (p) {
+        const uuid = p.playerUuid || p.player_uuid || '';
+        p.playerUuid = uuid;
+        p.player_uuid = uuid;
+      }
+      return p;
     } catch (e) {
       return null;
     }
   }
 
   function savePlayer(player) {
+    if (!player) return;
+    const uuid = player.playerUuid || player.player_uuid || '';
+    player.playerUuid = uuid;
+    player.player_uuid = uuid;
     localStorage.setItem('isuzu_rush_player', JSON.stringify(player));
   }
 
   // --- SCREEN SWITCHER ---
   function showScreen(name) {
+    if (name !== 'game') {
+      showPauseModal(false);
+      if (typeof game !== 'undefined' && game && (game.state === 'playing' || game.state === 'paused')) {
+        game.stop();
+      }
+    }
     Object.keys(screens).forEach(key => {
       if (screens[key]) {
         screens[key].classList.toggle('active', key === name);
@@ -106,8 +200,115 @@ document.addEventListener('DOMContentLoaded', () => {
     updateSoundButtons();
   });
 
-  btnInGamePause?.addEventListener('click', () => {
-    if (game) game.pause();
+    const pauseModal = document.getElementById('pauseModal');
+  const btnResumeGame = document.getElementById('btnResumeGame');
+  const btnRestartGame = document.getElementById('btnRestartGame');
+  const btnBackToSplash = document.getElementById('btnBackToSplash');
+  const btnBackFromRegister = document.getElementById('btnBackFromRegister');
+  const btnBackFromTutorial = document.getElementById('btnBackFromTutorial');
+  const btnBackFromGameOver = document.getElementById('btnBackFromGameOver');
+
+  function showPauseModal(show) {
+    const modal = document.getElementById('pauseModal');
+    if (modal) {
+      if (show) {
+        modal.style.setProperty('display', 'flex', 'important');
+        modal.classList.add('active');
+      } else {
+        modal.style.setProperty('display', 'none', 'important');
+        modal.classList.remove('active');
+      }
+    }
+  }
+
+  function pauseGameAndShowMenu() {
+    if (game) {
+      game.pause();
+    }
+    showPauseModal(true);
+  }
+
+  function resumeGameAndHideMenu() {
+    showPauseModal(false);
+    if (game) {
+      game.resume();
+    }
+  }
+
+  function restartGameFromMenu() {
+    showPauseModal(false);
+    startGame();
+  }
+
+  function exitGameToSplash() {
+    showPauseModal(false);
+    if (game) {
+      game.stop();
+    }
+    showScreen('splash');
+  }
+
+  let lastPauseTap = 0;
+  function onPauseBtnPressed(e) {
+    const now = performance.now();
+    if (now - lastPauseTap < 250) return;
+    lastPauseTap = now;
+    if (e) {
+      if (e.stopPropagation) e.stopPropagation();
+      if (e.preventDefault && e.cancelable) e.preventDefault();
+    }
+    pauseGameAndShowMenu();
+  }
+
+  btnInGamePause?.addEventListener('click', onPauseBtnPressed);
+  btnInGamePause?.addEventListener('touchend', onPauseBtnPressed);
+
+  btnResumeGame?.addEventListener('click', (e) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    resumeGameAndHideMenu();
+  });
+  btnResumeGame?.addEventListener('touchend', (e) => {
+    if (e) {
+      if (e.stopPropagation) e.stopPropagation();
+      if (e.preventDefault && e.cancelable) e.preventDefault();
+    }
+    resumeGameAndHideMenu();
+  });
+
+  btnRestartGame?.addEventListener('click', (e) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    restartGameFromMenu();
+  });
+  btnRestartGame?.addEventListener('touchend', (e) => {
+    if (e) {
+      if (e.stopPropagation) e.stopPropagation();
+      if (e.preventDefault && e.cancelable) e.preventDefault();
+    }
+    restartGameFromMenu();
+  });
+
+  btnBackToSplash?.addEventListener('click', (e) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    exitGameToSplash();
+  });
+  btnBackToSplash?.addEventListener('touchend', (e) => {
+    if (e) {
+      if (e.stopPropagation) e.stopPropagation();
+      if (e.preventDefault && e.cancelable) e.preventDefault();
+    }
+    exitGameToSplash();
+  });
+
+  btnBackFromRegister?.addEventListener('click', () => {
+    showScreen('splash');
+  });
+
+  btnBackFromTutorial?.addEventListener('click', () => {
+    showScreen('splash');
+  });
+
+  btnBackFromGameOver?.addEventListener('click', () => {
+    showScreen('splash');
   });
 
   document.getElementById('btnLangToggle')?.addEventListener('click', () => {
@@ -118,6 +319,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- SPLASH SCREEN ACTIONS ---
   document.getElementById('btnStartGame')?.addEventListener('click', () => {
+    if (activeEventSettings.event_active === 'false') {
+      alert('ขณะนี้กิจกรรมปิดรับการแข่งขันชั่วคราว ขอขอบคุณทุกท่านที่ให้ความสนใจครับ!');
+      return;
+    }
     audio.unlock();
     const player = getSavedPlayer();
     if (!player) {
@@ -161,6 +366,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!pdpaConsent) {
       regError.textContent = window.t('errPdpaRequired');
       return;
+    }
+
+    if (activeEventSettings.require_phone === 'true') {
+      const cleanPhone = phone.replace(/[\s\-_]/g, '');
+      if (!cleanPhone || cleanPhone.length < 9) {
+        regError.textContent = 'กรุณาระบุเบอร์โทรศัพท์ที่ถูกต้อง (จำเป็นสำหรับการรับรางวัล)';
+        return;
+      }
     }
 
     try {
@@ -255,33 +468,68 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    let gameConfig = { playerLives: 3, baseSpeed: 6, maxSpeed: 15 };
+    const preset = window.GAME_CONFIG ? window.GAME_CONFIG.getCurrentPreset() : {};
+    let lives = parseInt(activeEventSettings.player_lives, 10) || 3;
+    let speedStart = preset.speedStart || 210;
+    let speedMax = preset.speedMax || 620;
+    let acceleration = preset.acceleration || 2.5;
+
+    if (activeEventSettings.base_speed) {
+      const bs = parseFloat(activeEventSettings.base_speed);
+      if (bs <= 5) speedStart = 170;
+      else if (bs >= 7) speedStart = 280;
+    }
+
+    let gameConfig = {
+      playerLives: lives,
+      speedStart: speedStart,
+      speedMax: speedMax,
+      acceleration: acceleration,
+      difficulty: activeEventSettings.difficulty || 'normal'
+    };
 
     try {
       const res = await fetch(`${API_BASE}/api/game/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ playerUuid: player.playerUuid })
+        body: JSON.stringify({
+          playerUuid: player.playerUuid || player.player_uuid,
+          nickname: player.nickname,
+          phone: player.phone,
+          email: player.email,
+          source: detectedSource
+        })
       });
 
       const data = await res.json();
-      if (res.ok && data.success) {
+      if (res.ok && data.success && data.config) {
         activeSessionToken = data.sessionToken;
-        if (data.config) {
-          gameConfig = data.config;
-          if (data.config.difficulty && window.GAME_CONFIG) {
-            window.GAME_CONFIG.setDifficulty(data.config.difficulty);
-          }
+        if (data.config.eventActive === false) {
+          alert('ขณะนี้กิจกรรมปิดรับการแข่งขันชั่วคราว');
+          return;
+        }
+        if (data.config.playerLives) {
+          gameConfig.playerLives = parseInt(data.config.playerLives, 10);
+        }
+        if (data.config.difficulty && window.GAME_CONFIG) {
+          window.GAME_CONFIG.setDifficulty(data.config.difficulty);
+          const p = window.GAME_CONFIG.getCurrentPreset();
+          gameConfig.speedStart = data.config.speedStart || p.speedStart;
+          gameConfig.speedMax = data.config.speedMax || p.speedMax;
+          gameConfig.acceleration = data.config.acceleration || p.acceleration;
         }
       }
     } catch (e) {
-      // Offline fallback
       activeSessionToken = 'offline_' + Date.now();
     }
 
     if (!game) {
       game = new RunnerGame(canvas, audio, handleGameOver);
     }
+    game.onPauseStateChange = (isPaused) => {
+      showPauseModal(isPaused);
+    };
+    showPauseModal(false);
 
     showScreen('game');
     game.start(gameConfig);
@@ -430,7 +678,11 @@ document.addEventListener('DOMContentLoaded', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sessionToken: activeSessionToken,
-          playerUuid: player ? player.playerUuid : '',
+          playerUuid: player ? (player.playerUuid || player.player_uuid || '') : '',
+          player_uuid: player ? (player.playerUuid || player.player_uuid || '') : '',
+          nickname: player ? player.nickname : '',
+          phone: player ? player.phone : '',
+          email: player ? player.email : '',
           score: stats.score,
           distance: stats.distance,
           coins: stats.carrots || 0,
@@ -560,7 +812,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (leaderboardPollingInterval) clearInterval(leaderboardPollingInterval);
     leaderboardPollingInterval = setInterval(() => {
       fetchLeaderboard(currentLbPeriod);
-    }, 15000);
+    }, 5000);
   }
 
   // Leaderboard Tabs
@@ -581,6 +833,52 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!str) return '';
     return str.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
   }
+
+  
+  // Auto-sync player registration and offline best scores to cloud server
+  async function syncLocalPlayerWithServer() {
+    const player = getSavedPlayer();
+    if (!player || !player.nickname) return;
+
+    try {
+      await fetch(`${API_BASE}/api/player/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          playerUuid: player.playerUuid,
+          nickname: player.nickname,
+          phone: player.phone || '',
+          email: player.email || '',
+          source: detectedSource,
+          pdpaConsent: true
+        })
+      });
+
+      const bestScore = parseInt(localStorage.getItem('isuzu_rush_best') || '0', 10);
+      const bestDistance = parseInt(localStorage.getItem('isuzu_rush_best_distance') || '0', 10);
+      if (bestScore > 0) {
+        await fetch(`${API_BASE}/api/game/sync-score`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            playerUuid: player.playerUuid,
+            nickname: player.nickname,
+            phone: player.phone || '',
+            email: player.email || '',
+            score: bestScore,
+            distance: bestDistance,
+            source: detectedSource
+          })
+        });
+      }
+
+      fetchLeaderboard(currentLbPeriod);
+    } catch (e) {
+      console.log('Sync offline:', e);
+    }
+  }
+
+  syncLocalPlayerWithServer();
 
   updateSoundButtons();
 });

@@ -24,9 +24,33 @@ class BackgroundManager {
     this.fadeTimer = 0;
     this.fadeDuration = 1.0; // 1 second smooth crossfade
 
-    // Highway Campaign Billboard Image
-    this.billboardImg = new Image();
-    this.billboardImg.src = './assets/brand/campaign_banner.jpg';
+    // Highway Campaign & Event Billboard Images
+    this.billboardImages = [
+      {
+        src: './assets/brand/billboard_euro5.jpg',
+        img: new Image(),
+        title: 'EURO 5 พี่ใหญ่ขอโชว์'
+      },
+      {
+        src: './assets/brand/billboard_deal.png',
+        img: new Image(),
+        title: 'ดีลสุดคุ้ม แรงหยุดโลก!'
+      },
+      {
+        src: './assets/brand/billboard_rabbit.png',
+        img: new Image(),
+        title: 'ISUZU TRUSTED BUDDY'
+      },
+      {
+        src: './assets/brand/campaign_banner.jpg',
+        img: new Image(),
+        title: 'ISUZU 2.2 BITURBO'
+      }
+    ];
+
+    this.billboardImages.forEach(b => {
+      b.img.src = b.src;
+    });
     this.billboardOffset = 0;
   }
 
@@ -239,12 +263,17 @@ class BackgroundManager {
     }
 
     // Highway Mega-Billboards (placed in mid-distance, scrolling calmly and gently at 0.12x)
-    const bbSpacing = 850;
-    const bbOffset = this.billboardOffset % bbSpacing;
-    for (let i = -1; i <= Math.ceil(this.w / bbSpacing) + 1; i++) {
-      const bx = i * bbSpacing - bbOffset;
-      if (bx > -200 && bx < this.w + 100) {
-        this.drawHighwayBillboard(ctx, bx, baseY);
+    const bbSpacing = 520;
+    const numBillboards = this.billboardImages.length;
+    const startIndex = Math.floor(this.billboardOffset / bbSpacing);
+    const visibleCount = Math.ceil(this.w / bbSpacing) + 2;
+
+    for (let k = -1; k <= visibleCount; k++) {
+      const globalIdx = startIndex + k;
+      const bx = globalIdx * bbSpacing - this.billboardOffset;
+      if (bx > -260 && bx < this.w + 120) {
+        const itemIdx = ((globalIdx % numBillboards) + numBillboards) % numBillboards;
+        this.drawHighwayBillboard(ctx, bx, baseY, this.billboardImages[itemIdx]);
       }
     }
 
@@ -284,53 +313,99 @@ class BackgroundManager {
     ctx.restore();
   }
 
-  drawHighwayBillboard(ctx, x, baseY) {
+  drawHighwayBillboard(ctx, x, baseY, billboard) {
+    if (!billboard) return;
     ctx.save();
-    const bbW = 148;
-    const bbH = 68;
-    const postH = 88;
+    const bbW = 160;
+    const bbH = 76;
+    const postH = 96;
     const topY = baseY - postH;
 
     // Steel support posts
-    ctx.fillStyle = '#444450';
-    ctx.fillRect(x + 22, topY + bbH, 6, postH - bbH);
-    ctx.fillRect(x + bbW - 28, topY + bbH, 6, postH - bbH);
+    ctx.fillStyle = '#3A3A46';
+    ctx.fillRect(x + 24, topY + bbH, 7, postH - bbH);
+    ctx.fillRect(x + bbW - 31, topY + bbH, 7, postH - bbH);
 
     // Cross braces
-    ctx.strokeStyle = '#33333E';
-    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = '#2E2E38';
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(x + 22, topY + bbH);
-    ctx.lineTo(x + bbW - 22, baseY);
-    ctx.moveTo(x + bbW - 22, topY + bbH);
-    ctx.lineTo(x + 22, baseY);
+    ctx.moveTo(x + 24, topY + bbH);
+    ctx.lineTo(x + bbW - 24, baseY);
+    ctx.moveTo(x + bbW - 24, topY + bbH);
+    ctx.lineTo(x + 24, baseY);
     ctx.stroke();
 
     // Board backing & red LED border
-    ctx.fillStyle = '#0E0E12';
+    ctx.fillStyle = '#0C0D12';
     ctx.strokeStyle = '#DD0000';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2.5;
     ctx.beginPath();
-    ctx.roundRect(x, topY, bbW, bbH, 6);
+    ctx.roundRect(x, topY, bbW, bbH, 7);
     ctx.fill();
     ctx.stroke();
 
+    // Inner backing
+    ctx.fillStyle = '#14141C';
+    ctx.beginPath();
+    ctx.roundRect(x + 3, topY + 3, bbW - 6, bbH - 6, 5);
+    ctx.fill();
+
     // Billboard artwork image
-    if (this.billboardImg && this.billboardImg.complete && this.billboardImg.naturalWidth > 0) {
-      ctx.drawImage(this.billboardImg, x + 3, topY + 3, bbW - 6, bbH - 6);
+    const img = billboard.img;
+    if (img && img.complete && img.naturalWidth > 0) {
+      const pad = 4;
+      const targetW = bbW - pad * 2;
+      const targetH = bbH - pad * 2;
+      const targetX = x + pad;
+      const targetY = topY + pad;
+
+      const imgAspect = img.naturalWidth / img.naturalHeight;
+      const boxAspect = targetW / targetH;
+
+      let drawW = targetW;
+      let drawH = targetH;
+      let drawX = targetX;
+      let drawY = targetY;
+
+      if (imgAspect > boxAspect) {
+        drawH = targetW / imgAspect;
+        drawY = targetY + (targetH - drawH) / 2;
+      } else {
+        drawW = targetH * imgAspect;
+        drawX = targetX + (targetW - drawW) / 2;
+      }
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.roundRect(x + 3, topY + 3, bbW - 6, bbH - 6, 5);
+      ctx.clip();
+      ctx.drawImage(img, drawX, drawY, drawW, drawH);
+      ctx.restore();
     } else {
       ctx.fillStyle = '#DD0000';
-      ctx.font = "bold 11px 'Kanit', sans-serif";
+      ctx.font = "bold 12px 'Kanit', sans-serif";
       ctx.textAlign = 'center';
-      ctx.fillText('ISUZU 2.2 BITURBO', x + bbW / 2, topY + bbH / 2);
+      ctx.fillText(billboard.title || 'ISUZU', x + bbW / 2, topY + bbH / 2 + 4);
     }
 
-    // Top LED Spotlights
-    ctx.fillStyle = '#FFEAA7';
-    ctx.beginPath();
-    ctx.arc(x + 36, topY - 2, 2.5, 0, Math.PI * 2);
-    ctx.arc(x + bbW - 36, topY - 2, 2.5, 0, Math.PI * 2);
-    ctx.fill();
+    // Top LED Spotlights (3 fixtures)
+    const lightPositions = [x + 28, x + bbW / 2, x + bbW - 28];
+    for (const lx of lightPositions) {
+      ctx.fillStyle = '#444452';
+      ctx.fillRect(lx - 1.5, topY - 4, 3, 5);
+      ctx.fillStyle = '#FFEAA7';
+      ctx.beginPath();
+      ctx.arc(lx, topY - 4, 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Downward soft light sheen across upper portion of billboard
+    const lightGlow = ctx.createLinearGradient(0, topY, 0, topY + 28);
+    lightGlow.addColorStop(0, 'rgba(255, 234, 167, 0.22)');
+    lightGlow.addColorStop(1, 'rgba(255, 234, 167, 0.0)');
+    ctx.fillStyle = lightGlow;
+    ctx.fillRect(x + 3, topY + 3, bbW - 6, 28);
 
     ctx.restore();
   }

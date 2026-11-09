@@ -50,13 +50,18 @@ const I18N = {
     slide3Desc: 'หลบกล่องเครื่องมือ ยางรถยนต์ กรวย หลุม และรถกระบะอีซูซุที่วิ่งสวนมา! ทำ Combo รับคะแนน x2, x3, x5!',
     btnStartTutorialDone: 'เข้าใจแล้ว! ลุยเลย',
 
-    // In-Game HUD
+    // In-Game HUD & Pause Modal
     score: 'คะแนน',
     distance: 'ระยะทาง',
     combo: 'คอมโบ',
     meters: 'ม.',
     paused: 'หยุดชั่วคราว',
     btnResume: 'เล่นต่อ',
+    btnRestart: 'เริ่มใหม่',
+    btnBackToMenu: 'ย้อนกลับ',
+    pausedTitle: 'พักเกม',
+    pausedHeader: 'พักเกมชั่วคราว',
+    pausedSubtitle: 'เลือกเมนูที่ต้องการ',
     btnQuit: 'กลับหน้าหลัก',
 
     // Game Over Screen
@@ -141,13 +146,18 @@ const I18N = {
     slide3Desc: 'Dodge toolboxes, tires, cones, potholes, and oncoming Isuzu trucks! Chain pickups for x2, x3, x5 Combos!',
     btnStartTutorialDone: "Got it! Let's Go",
 
-    // In-Game HUD
+    // In-Game HUD & Pause Modal
     score: 'Score',
     distance: 'Distance',
     combo: 'Combo',
     meters: 'm',
     paused: 'PAUSED',
     btnResume: 'Resume',
+    btnRestart: 'Restart',
+    btnBackToMenu: 'Back',
+    pausedTitle: 'Paused',
+    pausedHeader: 'Game Paused',
+    pausedSubtitle: 'Choose an option',
     btnQuit: 'Quit',
 
     // Game Over Screen

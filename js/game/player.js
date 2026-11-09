@@ -113,6 +113,17 @@ class RabbitPlayer {
     this.currentAirTimer = 0;
   }
 
+  resize(roadY) {
+    const newBaseY = roadY - this.height + 6;
+    if (this.isGrounded) {
+      this.y = newBaseY;
+    } else {
+      const diff = newBaseY - this.baseY;
+      this.y += diff;
+    }
+    this.baseY = newBaseY;
+  }
+
   startJump() {
     this.isHoldingJump = true;
 
@@ -124,6 +135,7 @@ class RabbitPlayer {
       this.jumpsRemaining = 1;
       this.jumpHoldTimer = this.maxJumpHoldDuration;
       this.currentAirTimer = 0;
+      this.lastJumpTime = performance.now();
 
       // Upward vertical stretch
       this.scaleX = 0.85;
@@ -132,10 +144,17 @@ class RabbitPlayer {
       this.audio.playJump();
       this.createDustBurst(this.x + this.width / 2, this.baseY + this.height - 4, 8);
     } else if (this.doubleJumpEnabled && this.jumpsRemaining > 0) {
-      // Double Jump
-      this.vy = this.doubleJumpVelocity;
+      // Guard against hardware/browser duplicate touch events in same instant (< 90ms)
+      const now = performance.now();
+      if (this.lastJumpTime && (now - this.lastJumpTime < 90)) {
+        return;
+      }
+      this.lastJumpTime = now;
+
+      // Double Jump: strong, satisfying upward leap
+      this.vy = Math.min(-820, this.doubleJumpVelocity);
       this.jumpsRemaining = 0;
-      this.jumpHoldTimer = this.maxJumpHoldDuration * 0.7;
+      this.jumpHoldTimer = this.maxJumpHoldDuration * 0.75;
 
       this.scaleX = 0.82;
       this.scaleY = 1.28;
