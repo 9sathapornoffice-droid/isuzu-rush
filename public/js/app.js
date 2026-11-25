@@ -44,6 +44,14 @@ document.addEventListener('DOMContentLoaded', () => {
   if (queryApi) {
     localStorage.setItem('isuzu_rush_api_url', queryApi);
   }
+
+  let API_BASE = DEFAULT_CLOUD_API;
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.includes('onrender.com')) {
+    API_BASE = '';
+  } else if (localStorage.getItem('isuzu_rush_api_url')) {
+    API_BASE = localStorage.getItem('isuzu_rush_api_url');
+  }
+
   // --- DYNAMIC EVENT SETTINGS ---
   let activeEventSettings = {
     event_title: 'ISUZU RUSH 2026',
@@ -117,13 +125,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   loadSettingsFromServer();
-
-  let API_BASE = DEFAULT_CLOUD_API;
-  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.includes('onrender.com')) {
-    API_BASE = '';
-  } else if (localStorage.getItem('isuzu_rush_api_url')) {
-    API_BASE = localStorage.getItem('isuzu_rush_api_url');
-  }
 
   // Initialize Language
   window.setLanguage(window.getLanguage());

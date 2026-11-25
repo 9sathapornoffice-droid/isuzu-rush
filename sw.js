@@ -16,11 +16,9 @@ const PRECACHE_ASSETS = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(async (cache) => {
-      try {
-        await cache.addAll(PRECACHE_ASSETS);
-      } catch (err) {
-        console.warn('[SW] Precache partial error (ignored):', err);
-      }
+      await Promise.allSettled(
+        PRECACHE_ASSETS.map((asset) => cache.add(asset).catch(() => {}))
+      );
     })
   );
   self.skipWaiting();
@@ -78,8 +76,10 @@ self.addEventListener('fetch', (event) => {
         }
         // Fallback for page navigation to root/index.html
         if (req.mode === 'navigate') {
-          return caches.match('./') || caches.match('./index.html');
+          const navFallback = await caches.match('./') || await caches.match('./index.html');
+          if (navFallback) return navFallback;
         }
+        return new Response('Network error occurred', { status: 408, headers: { 'Content-Type': 'text/plain' } });
       })
   );
 });
