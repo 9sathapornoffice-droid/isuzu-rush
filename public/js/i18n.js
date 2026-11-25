@@ -20,6 +20,7 @@ const I18N = {
 
     // Splash Screen
     btnStart: 'เริ่มวิ่งเลย!',
+    btnInstall: 'ติดตั้งแอปลงมือถือ',
     btnLeaderboard: 'ตารางอันดับ',
     btnHowToPlay: 'วิธีเล่น',
     soundOn: 'เปิดเสียง',
@@ -116,6 +117,7 @@ const I18N = {
 
     // Splash Screen
     btnStart: 'RUSH NOW!',
+    btnInstall: 'Install App',
     btnLeaderboard: 'Leaderboard',
     btnHowToPlay: 'How to Play',
     soundOn: 'Sound: On',

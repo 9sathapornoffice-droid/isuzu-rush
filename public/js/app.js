@@ -881,4 +881,118 @@ document.addEventListener('DOMContentLoaded', () => {
   syncLocalPlayerWithServer();
 
   updateSoundButtons();
+
+  // =========================================================================
+  // Progressive Web App (PWA) & Mobile Installation Management
+  // =========================================================================
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js', { scope: './' })
+        .then((reg) => {
+          console.log('[PWA] Service Worker registered successfully:', reg.scope);
+        })
+        .catch((err) => {
+          console.warn('[PWA] Service Worker registration failed:', err);
+        });
+    });
+  }
+
+  let deferredInstallPrompt = null;
+  const btnInstallApp = document.getElementById('btnInstallApp');
+  const modalInstallGuide = document.getElementById('modal-install-guide');
+  const guideAndroid = document.getElementById('guide-android');
+  const guideIos = document.getElementById('guide-ios');
+  const guideInappWarning = document.getElementById('guide-inapp-warning');
+  const btnCloseInstallGuide = document.getElementById('btnCloseInstallGuide');
+  const btnDismissInstallGuide = document.getElementById('btnDismissInstallGuide');
+
+  const ua = window.navigator.userAgent.toLowerCase();
+  const isIos = /iphone|ipad|ipod/.test(ua);
+  const isInAppBrowser = /line|fbav|instagram|messenger/.test(ua);
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+  // Show install button for iOS or non-standalone users
+  if (!isStandalone) {
+    if (btnInstallApp) {
+      if (isIos || isInAppBrowser) {
+        btnInstallApp.style.display = 'flex';
+      }
+    }
+  }
+
+  // Android / Chromium beforeinstallprompt event
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    if (!isStandalone && btnInstallApp) {
+      btnInstallApp.style.display = 'flex';
+    }
+    console.log('[PWA] beforeinstallprompt captured');
+  });
+
+  // App installed event
+  window.addEventListener('appinstalled', () => {
+    deferredInstallPrompt = null;
+    if (btnInstallApp) btnInstallApp.style.display = 'none';
+    if (modalInstallGuide) modalInstallGuide.classList.remove('active');
+    console.log('[PWA] App successfully installed!');
+  });
+
+  function showInstallGuideModal() {
+    if (!modalInstallGuide) return;
+    if (isIos) {
+      if (guideIos) guideIos.style.display = 'block';
+      if (guideAndroid) guideAndroid.style.display = 'none';
+    } else {
+      if (guideAndroid) guideAndroid.style.display = 'block';
+      if (guideIos) guideIos.style.display = 'none';
+    }
+    if (isInAppBrowser && guideInappWarning) {
+      guideInappWarning.style.display = 'block';
+    }
+    modalInstallGuide.classList.add('active');
+  }
+
+  if (btnInstallApp) {
+    btnInstallApp.addEventListener('click', async () => {
+      if (audio && typeof audio.play === 'function') {
+        audio.play('click');
+      }
+      if (deferredInstallPrompt) {
+        try {
+          deferredInstallPrompt.prompt();
+          const { outcome } = await deferredInstallPrompt.userChoice;
+          console.log('[PWA] User choice:', outcome);
+          if (outcome === 'accepted') {
+            btnInstallApp.style.display = 'none';
+          }
+          deferredInstallPrompt = null;
+        } catch (err) {
+          console.warn('[PWA] prompt error:', err);
+          showInstallGuideModal();
+        }
+      } else {
+        showInstallGuideModal();
+      }
+    });
+  }
+
+  if (btnCloseInstallGuide) {
+    btnCloseInstallGuide.addEventListener('click', () => {
+      modalInstallGuide.classList.remove('active');
+    });
+  }
+  if (btnDismissInstallGuide) {
+    btnDismissInstallGuide.addEventListener('click', () => {
+      modalInstallGuide.classList.remove('active');
+    });
+  }
+  if (modalInstallGuide) {
+    modalInstallGuide.addEventListener('click', (e) => {
+      if (e.target === modalInstallGuide) {
+        modalInstallGuide.classList.remove('active');
+      }
+    });
+  }
+
 });

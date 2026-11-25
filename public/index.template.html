@@ -5,6 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>ISUZU RUSH - วิ่งกับ ISUZU Trusted Buddy (TSH)</title>
 
+  <!-- Progressive Web App (PWA) & Mobile App Install -->
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#E60012">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <!-- Apple iOS Safari Web App & Touch Icons -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ISUZU RUSH">
+  <link rel="apple-touch-icon" href="./assets/icons/apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="./assets/icons/icon-180.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="./assets/icons/icon-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="./assets/icons/icon-512.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="./assets/icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="./assets/icons/favicon.png">
+
   <!-- Open Graph Meta Tags for Facebook & LINE link sharing -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="ISUZU RUSH - ตะลุยความเร็วกับ ISUZU Trusted Buddy (TSH)">
@@ -62,6 +78,9 @@
         <div class="splash-buttons">
           <button id="btnStartGame" class="btn-primary" data-i18n="btnStart">
             🚀 เริ่มวิ่งเลย!
+          </button>
+          <button id="btnInstallApp" class="btn-pwa-install" style="display:none;">
+            📲 <span data-i18n="btnInstall">ติดตั้งแอปลงมือถือ</span>
           </button>
           <button id="btnOpenLeaderboard" class="btn-secondary" data-i18n="btnLeaderboard">
             🏆 ตารางอันดับ
@@ -292,6 +311,67 @@
       </div>
       <div class="modal-footer">
         <button onclick="document.getElementById('modal-pdpa').classList.remove('active')" class="btn-primary" style="padding:10px; font-size:15px;" data-i18n="close">
+          เข้าใจแล้ว
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- iOS & Android PWA Install Guide Modal -->
+  <div id="modal-install-guide" class="modal-overlay">
+    <div class="modal-box pwa-guide-box">
+      <div class="modal-header">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <img src="./assets/icons/icon-192.png" alt="Icon" style="width:36px; height:36px; border-radius:8px; border:1.5px solid #E60012;">
+          <div>
+            <h3 style="font-size:15px; color:#FFF; font-weight:700;">ติดตั้ง ISUZU RUSH ลงมือถือ</h3>
+            <span style="font-size:11px; color:var(--brand-gold);">⚡ แตะครั้งเดียว เล่นได้ทันทีแบบเต็มจอ</span>
+          </div>
+        </div>
+        <button id="btnCloseInstallGuide" style="background:none; border:none; color:#AAA; font-size:22px; cursor:pointer;">&times;</button>
+      </div>
+      <div class="modal-body" style="padding:16px;">
+        <!-- Android Instructions -->
+        <div id="guide-android" style="display:none;">
+          <p style="font-size:13px; color:#FFF; margin-bottom:12px;">วิธีติดตั้งบนมือถือ Android (Chrome):</p>
+          <div class="guide-step">
+            <span class="guide-step-badge">1</span>
+            <span>แตะปุ่มจุดสามจุด <strong>⋮ (เมนู)</strong> ที่มุมขวาบนของ Google Chrome</span>
+          </div>
+          <div class="guide-step">
+            <span class="guide-step-badge">2</span>
+            <span>เลือกเมนู <strong>"ติดตั้งแอป" (Install app)</strong> หรือ <strong>"เพิ่มลงในหน้าจอหลัก"</strong></span>
+          </div>
+          <div class="guide-step">
+            <span class="guide-step-badge">3</span>
+            <span>แตะ <strong>"ติดตั้ง"</strong> ไอคอนเกมจะไปอยู่บนหน้าจอมือถือของคุณทันที!</span>
+          </div>
+        </div>
+
+        <!-- iOS Safari Instructions -->
+        <div id="guide-ios" style="display:none;">
+          <p style="font-size:13px; color:#FFF; margin-bottom:12px;">วิธีติดตั้งบน iPhone / iPad (ผ่าน Safari):</p>
+          <div class="guide-step">
+            <span class="guide-step-badge">1</span>
+            <span>แตะปุ่มแชร์ <strong><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; display:inline-block;"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> ไอคอนแชร์</strong> ที่แถบเมนูด้านล่าง Safari</span>
+          </div>
+          <div class="guide-step">
+            <span class="guide-step-badge">2</span>
+            <span>เลื่อนลงมาแล้วเลือก <strong>"➕ เพิ่มไปยังหน้าจอโฮม" (Add to Home Screen)</strong></span>
+          </div>
+          <div class="guide-step">
+            <span class="guide-step-badge">3</span>
+            <span>แตะคำว่า <strong>"เพิ่ม" (Add)</strong> ที่มุมบนขวา พร้อมเข้าเล่นได้ทันที!</span>
+          </div>
+        </div>
+
+        <!-- In-App Browser Warning (LINE / Facebook) -->
+        <div id="guide-inapp-warning" style="display:none; margin-top:8px; padding:10px 12px; background:rgba(230,0,18,0.15); border:1px solid #E60012; border-radius:10px; font-size:12px; color:#FFB4B4; line-height:1.5;">
+          💬 <strong>กำลังเปิดผ่าน LINE หรือ Facebook:</strong> กรุณาแตะที่จุดสามจุด <strong>⋯</strong> มุมขวาบน แล้วเลือก <strong>"เปิดด้วยเบราว์เซอร์อื่น" (Open in Safari / Chrome)</strong> เพื่อติดตั้งลงหน้าจอมือถือ
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btnDismissInstallGuide" class="btn-primary" style="padding:10px; font-size:15px; width:100%;">
           เข้าใจแล้ว
         </button>
       </div>

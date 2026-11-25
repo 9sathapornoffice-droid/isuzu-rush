@@ -1,0 +1,40 @@
+{
+  "name": "ISUZU RUSH - วิ่งกับ ISUZU Trusted Buddy",
+  "short_name": "ISUZU RUSH",
+  "description": "เกมวิ่ง Endless Runner สุดมันส์ ลุ้นของรางวัลพิเศษกับ ISUZU Trusted Buddy (TSH)",
+  "id": "./",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0B0C10",
+  "theme_color": "#E60012",
+  "lang": "th",
+  "categories": ["games", "entertainment", "sports"],
+  "icons": [
+    {
+      "src": "./assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
