@@ -337,6 +337,17 @@ class RabbitPlayer {
     };
   }
 
+  getItemHitbox() {
+    // Generous pickup hitbox for collectibles (covers full body, ears, feet + 16px magnetic reach)
+    const pad = 16;
+    return {
+      x: this.x - pad + this.shakeOffsetX,
+      y: this.y - pad,
+      width: this.width + pad * 2,
+      height: this.height + pad * 2
+    };
+  }
+
   render(ctx) {
     // 1. Dust behind
     for (const p of this.dustParticles) {

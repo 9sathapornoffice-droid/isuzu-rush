@@ -363,8 +363,9 @@ class RunnerGame {
       }
     }
 
-    // 6. Item Pickups
-    this.items.checkCollection(playerHitbox, (type, pts, x, y) => {
+    // 6. Item Pickups (Generous collection hitbox + magnetic pull for smooth jump collection)
+    const itemHitbox = this.player.getItemHitbox ? this.player.getItemHitbox() : playerHitbox;
+    this.items.checkCollection(itemHitbox, this.player, (type, pts, x, y) => {
       const activeMultiplier = this.combo * (this.tshBoostTimer > 0 ? 2 : 1);
 
       if (type === 'carrot') {
