@@ -20,10 +20,11 @@ if %ERRORLEVEL% neq 0 (
 )
 
 echo.
-echo [2/3] เตรียมไฟล์ทั้งหมด (โฟลเดอร์ css, js, assets รูปภาพครบทั้งหมด)...
+echo [2/3] เตรียมไฟล์ทั้งหมดและคอมไพล์หน้ารวม (bundle.js)...
+call node bundle.js
 git remote set-url origin https://github.com/9sathapornoffice-droid/isuzu-rush.git
 git add .
-git commit -m "feat: add PWA mobile install support for iOS and Android" >nul 2>&1
+git commit -m "update: sync and bundle files for GitHub deployment" >nul 2>&1
 
 echo.
 echo [3/3] กำลังอัปโหลดไปยัง https://github.com/9sathapornoffice-droid/isuzu-rush ...
