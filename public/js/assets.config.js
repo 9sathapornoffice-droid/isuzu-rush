@@ -62,22 +62,26 @@ window.ASSETS_CONFIG = {
   items: {
     carrot: {
       src: './assets/items/carrot.svg',
+      size: 34,
       score: 10,
       label: '+10'
     },
     ticket: {
       src: './assets/items/ticket.svg',
+      size: 40,
       score: 50,
       label: 'VIP +50'
     },
     keyTsh: {
       src: './assets/items/key_tsh.svg',
+      size: 40,
       score: 100,
       label: 'TSH KEY +100!',
       multiplierDurationSec: 5  // Extra 2x multiplier for 5s
     },
     charger: {
       src: './assets/items/charger.svg',
+      size: 40,
       heal: 1,
       label: '+HEAL!'
     }

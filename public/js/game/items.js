@@ -87,12 +87,18 @@ class ItemManager {
   spawnItemPattern() {
     const roll = Math.random();
 
+    // Balanced item sizes (Unified special items scale, visible & balanced carrot)
+    const carrotSize = this.assetsConfig.items?.carrot?.size || 34;
+    const ticketSize = this.assetsConfig.items?.ticket?.size || 40;
+    const keyTshSize = this.assetsConfig.items?.keyTsh?.size || 40;
+    const chargerSize = this.assetsConfig.items?.charger?.size || 40;
+
     if (roll < 0.45) {
       // 1. Carrot Jump Arc: 5 carrots forming a natural parabolic jump trajectory
       // Perfectly matches the rabbit's jump curve (reaches peak height of ~125px off ground)
       const count = 5;
       const startX = this.w + 20;
-      const spacing = 44;
+      const spacing = 46;
       for (let i = 0; i < count; i++) {
         const t = i / (count - 1); // 0 to 1
         // Parabolic arc: peaks at center (sin(0.5*PI) = 1) -> 125px high
@@ -100,9 +106,9 @@ class ItemManager {
         this.items.push({
           type: 'carrot',
           x: startX + i * spacing,
-          baseY: this.roadY - 38 - arcHeight,
-          currentY: this.roadY - 38 - arcHeight,
-          size: 28,
+          baseY: this.roadY - 42 - arcHeight,
+          currentY: this.roadY - 42 - arcHeight,
+          size: carrotSize,
           bobAngle: i * 0.4,
           img: this.carrotImg
         });
@@ -114,10 +120,10 @@ class ItemManager {
       for (let i = 0; i < count; i++) {
         this.items.push({
           type: 'carrot',
-          x: startX + i * 38,
-          baseY: this.roadY - 38,
-          currentY: this.roadY - 38,
-          size: 28,
+          x: startX + i * 42,
+          baseY: this.roadY - 42,
+          currentY: this.roadY - 42,
+          size: carrotSize,
           bobAngle: i * 0.5,
           img: this.carrotImg
         });
@@ -131,7 +137,7 @@ class ItemManager {
         x: this.w + 30,
         baseY: this.roadY - heightOffset,
         currentY: this.roadY - heightOffset,
-        size: 34,
+        size: ticketSize,
         bobAngle: 0,
         img: this.ticketImg
       });
@@ -144,20 +150,20 @@ class ItemManager {
         x: this.w + 30,
         baseY: this.roadY - heightOffset,
         currentY: this.roadY - heightOffset,
-        size: 36,
+        size: keyTshSize,
         bobAngle: 0,
         img: this.keyTshImg
       });
     } else {
       // 5. Charger / Battery (Health Recovery)
       const isAir = Math.random() < 0.5;
-      const heightOffset = isAir ? 120 : 42;
+      const heightOffset = isAir ? 120 : 44;
       this.items.push({
         type: 'charger',
         x: this.w + 30,
         baseY: this.roadY - heightOffset,
         currentY: this.roadY - heightOffset,
-        size: 32,
+        size: chargerSize,
         bobAngle: 0,
         img: this.chargerImg
       });

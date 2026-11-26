@@ -87,62 +87,116 @@ class ItemManager {
   spawnItemPattern() {
     const roll = Math.random();
 
-    if (roll < 0.65) {
-      // Carrot Arc (3-5 carrots for jump collection)
-      const count = 3 + Math.floor(Math.random() * 3);
+    // Balanced item sizes (Unified special items scale, visible & balanced carrot)
+    const carrotSize = this.assetsConfig.items?.carrot?.size || 34;
+    const ticketSize = this.assetsConfig.items?.ticket?.size || 40;
+    const keyTshSize = this.assetsConfig.items?.keyTsh?.size || 40;
+    const chargerSize = this.assetsConfig.items?.charger?.size || 40;
+
+    if (roll < 0.45) {
+      // 1. Carrot Jump Arc: 5 carrots forming a natural parabolic jump trajectory
+      // Perfectly matches the rabbit's jump curve (reaches peak height of ~125px off ground)
+      const count = 5;
       const startX = this.w + 20;
+      const spacing = 46;
       for (let i = 0; i < count; i++) {
-        const t = i / (count - 1);
-        const arcHeight = Math.sin(t * Math.PI) * 65;
+        const t = i / (count - 1); // 0 to 1
+        // Parabolic arc: peaks at center (sin(0.5*PI) = 1) -> 125px high
+        const arcHeight = Math.sin(t * Math.PI) * 125;
         this.items.push({
           type: 'carrot',
-          x: startX + i * 36,
-          baseY: this.roadY - 38 - arcHeight,
-          currentY: this.roadY - 38 - arcHeight,
-          size: 28,
+          x: startX + i * spacing,
+          baseY: this.roadY - 42 - arcHeight,
+          currentY: this.roadY - 42 - arcHeight,
+          size: carrotSize,
+          bobAngle: i * 0.4,
+          img: this.carrotImg
+        });
+      }
+    } else if (roll < 0.70) {
+      // 2. Carrot Ground Run Line: 4 carrots in a row along the ground
+      const count = 4;
+      const startX = this.w + 20;
+      for (let i = 0; i < count; i++) {
+        this.items.push({
+          type: 'carrot',
+          x: startX + i * 42,
+          baseY: this.roadY - 42,
+          currentY: this.roadY - 42,
+          size: carrotSize,
           bobAngle: i * 0.5,
           img: this.carrotImg
         });
       }
     } else if (roll < 0.85) {
-      // Blue VIP Ticket
+      // 3. Blue VIP Ticket: Placed at standard jump peak (~130px) or high air (~185px for double jump)
+      const isHighAir = Math.random() < 0.5;
+      const heightOffset = isHighAir ? 185 : 130;
       this.items.push({
         type: 'ticket',
         x: this.w + 30,
-        baseY: this.roadY - 80,
-        currentY: this.roadY - 80,
-        size: 34,
+        baseY: this.roadY - heightOffset,
+        currentY: this.roadY - heightOffset,
+        size: ticketSize,
         bobAngle: 0,
         img: this.ticketImg
       });
-    } else if (roll < 0.95) {
-      // TSH Car Key
+    } else if (roll < 0.94) {
+      // 4. TSH Car Key: Placed at jump height (~140px) or high double jump (~195px)
+      const isHighAir = Math.random() < 0.5;
+      const heightOffset = isHighAir ? 195 : 140;
       this.items.push({
         type: 'keyTsh',
         x: this.w + 30,
-        baseY: this.roadY - 65,
-        currentY: this.roadY - 65,
-        size: 36,
+        baseY: this.roadY - heightOffset,
+        currentY: this.roadY - heightOffset,
+        size: keyTshSize,
         bobAngle: 0,
         img: this.keyTshImg
       });
     } else {
-      // Charger / Fuel Canister
+      // 5. Charger / Battery (Health Recovery)
+      const isAir = Math.random() < 0.5;
+      const heightOffset = isAir ? 120 : 44;
       this.items.push({
         type: 'charger',
         x: this.w + 30,
-        baseY: this.roadY - 60,
-        currentY: this.roadY - 60,
-        size: 32,
+        baseY: this.roadY - heightOffset,
+        currentY: this.roadY - heightOffset,
+        size: chargerSize,
         bobAngle: 0,
         img: this.chargerImg
       });
     }
   }
 
-  checkCollection(playerHitbox, onCollect) {
+  checkCollection(pickupHitbox, player, onCollect) {
+    // If onCollect passed as second argument (backward compatibility)
+    if (typeof player === 'function') {
+      onCollect = player;
+      player = null;
+    }
+
+    const playerCenterX = player ? (player.x + player.width / 2) : (pickupHitbox.x + pickupHitbox.width / 2);
+    const playerCenterY = player ? (player.y + player.height / 2) : (pickupHitbox.y + pickupHitbox.height / 2);
+
     for (let i = this.items.length - 1; i >= 0; i--) {
       const item = this.items[i];
+      const itemCenterX = item.x + item.size / 2;
+      const itemCenterY = item.currentY + item.size / 2;
+
+      // Magnetic attraction: When player jumps or passes near item (within 80px),
+      // smoothly draw item towards player so near-misses are collected cleanly
+      const dx = playerCenterX - itemCenterX;
+      const dy = playerCenterY - itemCenterY;
+      const dist = Math.hypot(dx, dy);
+
+      if (dist < 80) {
+        item.x += dx * 0.28;
+        item.currentY += dy * 0.28;
+        item.baseY += dy * 0.28;
+      }
+
       const itemHitbox = {
         x: item.x,
         y: item.currentY,
@@ -151,12 +205,12 @@ class ItemManager {
       };
 
       if (
-        playerHitbox.x < itemHitbox.x + itemHitbox.width &&
-        playerHitbox.x + playerHitbox.width > itemHitbox.x &&
-        playerHitbox.y < itemHitbox.y + itemHitbox.height &&
-        playerHitbox.y + playerHitbox.height > itemHitbox.y
+        pickupHitbox.x < itemHitbox.x + itemHitbox.width &&
+        pickupHitbox.x + pickupHitbox.width > itemHitbox.x &&
+        pickupHitbox.y < itemHitbox.y + itemHitbox.height &&
+        pickupHitbox.y + pickupHitbox.height > itemHitbox.y
       ) {
-        this.createSparkles(item.x + item.size / 2, item.currentY + item.size / 2, item.type);
+        this.createSparkles(itemCenterX, itemCenterY, item.type);
 
         if (item.type === 'carrot') {
           this.audio.playCoin();
